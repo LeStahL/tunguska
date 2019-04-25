@@ -1,3 +1,10 @@
+build
+*.kdev4
+*.kate-swp
+*.kate_swp
+*__pycache__
+
+
 # Prerequisites
 *.d
 
