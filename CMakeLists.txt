@@ -60,12 +60,12 @@ if(WIN32)
 #             COMMAND del "\"${PROJECT_SOURCE_DIR}/gfx/hangout.h\""
 #             COMMAND del "\"${PROJECT_SOURCE_DIR}/gfx/fourtwenty.h\""
 #             COMMAND python shader-compressor.py "${PROJECT_SOURCE_DIR}/gfx.frag" -o "${PROJECT_SOURCE_DIR}/gfx.h"  --no-minification 
-#             COMMAND python shader-compressor.py  -o "${PROJECT_SOURCE_DIR}/sfx.h" "${PROJECT_SOURCE_DIR}/sfx.frag" --no-minification
+            COMMAND python shader-compressor.py  -o "${PROJECT_SOURCE_DIR}/sfx.h" "${PROJECT_SOURCE_DIR}/sfx.frag" --no-minification
             COMMAND python shader-compressor.py -o "${PROJECT_SOURCE_DIR}/gfx/load.h" "${PROJECT_SOURCE_DIR}/gfx/load.frag" --no-minification
-#             COMMAND python shader-compressor.py -o "${PROJECT_SOURCE_DIR}/gfx/post.h" "${PROJECT_SOURCE_DIR}/gfx/post.frag" --no-minification
-#             COMMAND python shader-compressor.py -o "${PROJECT_SOURCE_DIR}/gfx/logo210.h" "${PROJECT_SOURCE_DIR}/gfx/logo210.frag" --no-minification
+            COMMAND python shader-compressor.py -o "${PROJECT_SOURCE_DIR}/gfx/post.h" "${PROJECT_SOURCE_DIR}/gfx/post.frag" --no-minification
+            COMMAND python shader-compressor.py -o "${PROJECT_SOURCE_DIR}/gfx/logo210.h" "${PROJECT_SOURCE_DIR}/gfx/logo210.frag" --no-minification
 #             COMMAND python shader-compressor.py -o "${PROJECT_SOURCE_DIR}/gfx/greet.h" "${PROJECT_SOURCE_DIR}/gfx/greet.frag" --no-minification
-#             COMMAND python shader-compressor.py -o "${PROJECT_SOURCE_DIR}/gfx/text.h" "${PROJECT_SOURCE_DIR}/gfx/text.frag" --no-minification
+            COMMAND python shader-compressor.py -o "${PROJECT_SOURCE_DIR}/gfx/text.h" "${PROJECT_SOURCE_DIR}/gfx/text.frag" --no-minification
 #             COMMAND python shader-compressor.py -o "${PROJECT_SOURCE_DIR}/gfx/logosmall.h" "${PROJECT_SOURCE_DIR}/gfx/logosmall.frag" --no-minification
 #             COMMAND python shader-compressor.py -o "${PROJECT_SOURCE_DIR}/gfx/nr4.h" "${PROJECT_SOURCE_DIR}/gfx/nr4.frag" --no-minification
 #             COMMAND python shader-compressor.py -o "${PROJECT_SOURCE_DIR}/gfx/qm.h" "${PROJECT_SOURCE_DIR}/gfx/qm.frag" --no-minification

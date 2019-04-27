@@ -15,10 +15,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-// define this to get some extra bytes
-//#define SUPER_SMALL
+#define DEBUG
 
-// WIN32 code
 const char *demoname = "Tunguska/Team210";
 unsigned int muted = 0.;
 
@@ -57,11 +55,6 @@ void *malloc( unsigned int size )
     return GlobalAlloc(GMEM_ZEROINIT, size) ;
 }
 
-// TODO: remove
-// #include <stdio.h>
-// 
-// #include <math.h>
-
 #include "sequence.h"
 
 // OpenGL extensions
@@ -87,99 +80,108 @@ PFNGLUNIFORM1IPROC glUniform1i;
 PFNGLACTIVETEXTUREPROC glActiveTexture;
 
 
-// // TODO: remove below
-// void //debug(int shader_handle)
-// {
-//     //printf("    Debugging shader with handle %d.\n", shader_handle);
-//     int compile_status = 0;
-//     glGetShaderiv(shader_handle, GL_COMPILE_STATUS, &compile_status);
-//     if(compile_status != GL_TRUE)
-//     {
-//         //printf("    FAILED.\n");
-//         GLint len;
-//         glGetShaderiv(shader_handle, GL_INFO_LOG_LENGTH, &len);
-//         //printf("    Log length: %d\n", len);
-//         GLchar *CompileLog = (GLchar*)malloc(len*sizeof(GLchar));
-//         glGetShaderInfoLog(shader_handle, len, NULL, CompileLog);
-//         //printf("    Error messages:\n%s\n", CompileLog);
-//         free(CompileLog);
-//     }
-//     else 
-//         //printf("    Shader compilation successful.\n");
-// }
-// 
-// void //debugp(int program)
-// {
-//     //printf("    Debugging program.\n");
-//     int compile_status = 0;
-//     glGetProgramiv(program, GL_LINK_STATUS, &compile_status);
-//     if(compile_status != GL_TRUE)
-//     {
-//         //printf("    FAILED.\n");
-//         GLint len;
-//         glGetProgramiv(program, GL_INFO_LOG_LENGTH, &len);
-//         //printf("    Log length: %d\n", len);
-//         GLchar *CompileLog = (GLchar*)malloc(len*sizeof(GLchar));
-//         glGetProgramInfoLog(program, len, NULL, CompileLog);
-//         //printf("    Error messages:\n%s\n", CompileLog);
-//         free(CompileLog);
-//     }
-//     else 
-//         //printf("    Program linking successful.\n");
-// }
-// // TODO: remove above
+#ifdef DEBUG
+#include <stdio.h>
 
-// Graphics shader globals
+// TODO: remove below
+void debug(int shader_handle)
+{
+    printf("    Debugging shader with handle %d.\n", shader_handle);
+    int compile_status = 0;
+    glGetShaderiv(shader_handle, GL_COMPILE_STATUS, &compile_status);
+    if(compile_status != GL_TRUE)
+    {
+        printf("    FAILED.\n");
+        GLint len;
+        glGetShaderiv(shader_handle, GL_INFO_LOG_LENGTH, &len);
+        printf("    Log length: %d\n", len);
+        GLchar *CompileLog = (GLchar*)malloc(len*sizeof(GLchar));
+        glGetShaderInfoLog(shader_handle, len, NULL, CompileLog);
+        printf("    Error messages:\n%s\n", CompileLog);
+        free(CompileLog);
+    }
+    else 
+        printf("    Shader compilation successful.\n");
+}
+
+void debugp(int program)
+{
+    printf("    Debugging program.\n");
+    int compile_status = 0;
+    glGetProgramiv(program, GL_LINK_STATUS, &compile_status);
+    if(compile_status != GL_TRUE)
+    {
+        printf("    FAILED.\n");
+        GLint len;
+        glGetProgramiv(program, GL_INFO_LOG_LENGTH, &len);
+        printf("    Log length: %d\n", len);
+        GLchar *CompileLog = (GLchar*)malloc(len*sizeof(GLchar));
+        glGetProgramInfoLog(program, len, NULL, CompileLog);
+        printf("    Error messages:\n%s\n", CompileLog);
+        free(CompileLog);
+    }
+    else 
+        printf("    Program linking successful.\n");
+}
+#else // DEBUG
+#define printf(a)
+#endif //DEBUG
+
 int w = 1920, h = 1080,
-    gfx_handle, gfx_program, 
-    time_location, resolution_location, 
-    font_texture_location, font_width_location,
-    sfx_program, sfx_handle, sfx_blockoffset_location, 
-    sfx_samplerate_location, sfx_volumelocation, 
+    // SFX
+    sfx_program, 
+    sfx_handle, 
+    sfx_blockoffset_location, 
+    sfx_samplerate_location, 
+    sfx_volumelocation, 
     sfx_texs_location,
-    sfx_sequence_texture_location, sfx_sequence_width_location,
-    gfx_sequence_texture_location, gfx_sequence_width_location,
-    gfx_executable_size_location,
-    load_program, load_resolution_location, load_time_location,
+    sfx_sequence_texture_location, 
+    sfx_sequence_width_location,
+
+    // Sequence
+    sequence_texture_handle,
+    
+    // Loading bar
+    load_handle,
+    load_program, 
+    load_resolution_location, 
+    load_time_location,
     load_progress_location,
-    post_program, post_resolution_location, post_fsaa_location,
+
+    // Post processing
+    post_handle,
+    post_program, 
+    post_resolution_location, 
+    post_fsaa_location,
     post_channel0_location,
-    fsaa = 25, txaa = 1,
-    gfx_fsaa_location, gfx_txaa_location,
-    logo210_time_location, logo210_resolution_location,
-    logo210_program, logo210_handle,
-    greet_time_location, greet_resolution_location,
-    greet_program, greet_handle,
-    text_time_location, text_resolution_location,
-    text_font_width_location, text_executable_size_location,
-    text_channel0_location, text_font_location,
-    text_program, text_handle,
-    logo_small_handle, logo_small_program,
-    logo_small_time_location, logo_small_resolution_location,
-    nr4_handle,nr4_program,
-    nr4_time_location, nr4_resolution_location,
-    qm_handle,qm_program,
-    qm_time_location, qm_resolution_location,
-    trip_handle, trip_program,
-    trip_time_location, trip_resolution_location,
-    surface_handle, surface_program,
-    surface_time_location, surface_resolution_location,
-    hangout_handle, hangout_program,
-    hangout_time_location, hangout_resolution_location,
-    fourtwenty_handle, fourtwenty_program,
-    fourtwenty_time_location, fourtwenty_resolution_location,
-    solskogen_handle, solskogen_program,
-    solskogen_time_location, solskogen_resolution_location;
     
-float font_texture_width;
+    // Antialiasing
+    fsaa = 25, 
+    txaa = 1,
+
+    // Logo
+    logo210_time_location, 
+    logo210_resolution_location,
+    logo210_program, 
+    logo210_handle,
     
+    // Text
+    text_time_location, 
+    text_resolution_location,
+    text_font_width_location,
+    text_channel0_location, 
+    text_font_location,
+    text_font_handle,
+    text_program, 
+    text_handle;
+
+double text_font_width;
 // Demo globals
 #define duration 188.
 double t_start = 0., 
     t_now = 0., 
     t_end = duration;
-unsigned int font_texture_handle, sequence_texture_handle;
-float executable_size = 0.;
+
 unsigned int loading = 1, music_loading = 0;
 int music_block = 0;
 unsigned int snd_framebuffer;
@@ -199,75 +201,14 @@ float progress = .0;
 HWAVEOUT hWaveOut;
 WAVEHDR silence_header = {0, 0, 0, 0, 0, 0, 0, 0 };
 double t_paused;
-HANDLE load_music_thread;
-DWORD load_music_thread_id;
-HANDLE load_gfx_thread;
-DWORD load_gfx_thread_id;
 
 GLuint first_pass_framebuffer = 0, first_pass_texture;
-
 HDC hdc;
 HGLRC glrc;
 GLenum error;
 #define NSHADERS 13.
 
 float t_load_end = 0.;
-
-// FFT related stuff
-float PI = 3.14159265359;
-
-// typedef struct
-// {
-//     float re,im;
-// } complex;
-// 
-// const complex I = { 0.,1. };
-// float WINDOW = 256;
-// 
-// complex mul(complex f1, complex f2)
-// {
-//     complex ret = { f1.re*f2.re - f1.im*f2.im, f1.re*f2.im+f1.im*f2.re };
-//     return ret;
-// }
-// 
-// complex add(complex f1, complex f2)
-// {
-//     complex ret = { f1.re + f2.re, f1.im + f2.im };
-//     return ret;
-// }
-// 
-// complex sub(complex f1, complex f2)
-// {
-//     complex ret = { f1.re-f2.re, f1.im - f2.im };
-//     return ret;
-// }
-// 
-// complex cexp(complex arg)
-// {
-//     float f = exp(arg.re);
-//     complex ret = { f*cos(arg.im), f*sin(arg.im) };
-//     return ret;
-// }
-// 
-// // Radix-2 from Wikipedia
-// void genFFT(complex *src, complex * dst, int N, int stride)
-// {
-//     if(N==1)
-//         dst[0] = src[0];
-//     else
-//     {
-//         genFFT(dst, dst, N/2, 2*stride);
-//         genFFT(dst+N/2, dst, N/2, 2*stride);
-//         for(int k=0; k<N/2; k += stride)
-//         {
-//             complex t = dst[k],
-//                 arg = { 0., -2.*PI*k/N };
-//             arg = cexp(arg);
-//             dst[k] = add(t, mul(arg, dst[k+N/2]));
-//             dst[k+N/2] = sub(t, mul(arg, dst[k+N/2]));
-//         }
-//     }
-// }
 
 DWORD WINAPI LoadMusicThread( LPVOID lpParam)
 {
@@ -296,17 +237,17 @@ DWORD WINAPI LoadMusicThread( LPVOID lpParam)
 #ifndef VAR_ISEQUENCEWIDTH
     #define VAR_ISEQUENCEWIDTH "iSequenceWidth"
 #endif
-    int sfx_size = strlen(sfx_frag),
-        sfx_handle = glCreateShader(GL_FRAGMENT_SHADER);
+    int sfx_size = strlen(sfx_frag);
+    sfx_handle = glCreateShader(GL_FRAGMENT_SHADER);
     sfx_program = glCreateProgram();
     glShaderSource(sfx_handle, 1, (GLchar **)&sfx_frag, &sfx_size);
     glCompileShader(sfx_handle);
-    //printf("---> SFX shader:\n");
-    //debug(sfx_handle);
+    printf("---> SFX shader:\n");
+    debug(sfx_handle);
     glAttachShader(sfx_program, sfx_handle);
     glLinkProgram(sfx_program);
-    //printf("---> SFX program:\n");
-    //debugp(sfx_program);
+    printf("---> SFX program:\n");
+    debugp(sfx_program);
     glUseProgram(sfx_program);
     sfx_samplerate_location = glGetUniformLocation(sfx_program, VAR_ISAMPLERATE);
     sfx_blockoffset_location = glGetUniformLocation(sfx_program, VAR_IBLOCKOFFSET);
@@ -314,7 +255,7 @@ DWORD WINAPI LoadMusicThread( LPVOID lpParam)
     sfx_texs_location = glGetUniformLocation(sfx_program, VAR_ITEXSIZE);
     sfx_sequence_texture_location = glGetUniformLocation(sfx_program, VAR_ISEQUENCE);
     sfx_sequence_width_location = glGetUniformLocation(sfx_program, VAR_ISEQUENCEWIDTH);
-    //printf("++++ SFX shader created.\n");
+    printf("++++ SFX shader created.\n");
     
     music_loading = 1;
     progress += .5/NSHADERS; 
@@ -339,48 +280,16 @@ DWORD WINAPI LoadLogo210Thread( LPVOID lpParam)
     logo210_program = glCreateProgram();
     glShaderSource(logo210_handle, 1, (GLchar **)&logo210_frag, &logo210_size);
     glCompileShader(logo210_handle);
-    //printf("---> Logo 210 shader:\n");
-    //debug(logo210_handle);
+    printf("---> Logo 210 shader:\n");
+    debug(logo210_handle);
     glAttachShader(logo210_program, logo210_handle);
     glLinkProgram(logo210_program);
-    //printf("---> Logo 210 program:\n");
-    //debugp(logo210_program);
+    printf("---> Logo 210 program:\n");
+    debugp(logo210_program);
     glUseProgram(logo210_program);
     logo210_time_location =  glGetUniformLocation(logo210_program, VAR_ITIME);
     logo210_resolution_location = glGetUniformLocation(logo210_program, VAR_IRESOLUTION);
-    //printf("++++ Logo 210 shader created.\n");
-    
-    progress += .5/NSHADERS;
-    
-    return 0;
-}
-
-DWORD WINAPI LoadGreetThread( LPVOID lpParam)
-{
-#undef VAR_IRESOLUTION
-#undef VAR_ITIME
-#include "gfx/greet.h"
-#ifndef VAR_IRESOLUTION
-    #define VAR_IRESOLUTION "iResolution"
-#endif
-#ifndef VAR_ITIME
-    #define VAR_ITIME "iTime"
-#endif
-    int greet_size = strlen(greet_frag),
-        greet_handle = glCreateShader(GL_FRAGMENT_SHADER);
-    greet_program = glCreateProgram();
-    glShaderSource(greet_handle, 1, (GLchar **)&greet_frag, &greet_size);
-    glCompileShader(greet_handle);
-    //printf("---> Greetings shader:\n");
-    //debug(greet_handle);
-    glAttachShader(greet_program, greet_handle);
-    glLinkProgram(greet_program);
-    //printf("---> Greetings program:\n");
-    //debugp(greet_program);
-    glUseProgram(greet_program);
-    greet_time_location =  glGetUniformLocation(greet_program, VAR_ITIME);
-    greet_resolution_location = glGetUniformLocation(greet_program, VAR_IRESOLUTION);
-    //printf("++++ Greetings shader created.\n");
+    printf("++++ Logo 210 shader created.\n");
     
     progress += .5/NSHADERS;
     
@@ -409,9 +318,6 @@ DWORD WINAPI LoadTextThread(LPVOID lpParam)
 #ifndef VAR_IFONTWIDTH
     #define VAR_IFONTWIDTH "iFontWidth"
 #endif
-#ifndef VAR_IEXECUTABLESIZE
-    #define VAR_IEXECUTABLESIZE "iExecutableSize"
-#endif
 #ifndef VAR_ICHANNEL0
     #define VAR_ICHANNEL0 "iChannel0"
 #endif
@@ -421,288 +327,31 @@ DWORD WINAPI LoadTextThread(LPVOID lpParam)
     text_program = glCreateProgram();
     glShaderSource(text_handle, 1, (GLchar **)&text_frag, &text_size);
     glCompileShader(text_handle);
-    //printf("---> Text shader:\n");
-    //debug(text_handle);
+    printf("---> Text shader:\n");
+    debug(text_handle);
     glAttachShader(text_program, text_handle);
     glLinkProgram(text_program);
-    //printf("---> Text program:\n");
-    //debugp(text_program);
+    printf("---> Text program:\n");
+    debugp(text_program);
     glUseProgram(text_program);
     text_time_location =  glGetUniformLocation(text_program, VAR_ITIME);
     text_resolution_location = glGetUniformLocation(text_program, VAR_IRESOLUTION);
     text_font_location= glGetUniformLocation(text_program, VAR_IFONT);
     text_font_width_location = glGetUniformLocation(text_program, VAR_IFONTWIDTH);
-    text_executable_size_location = glGetUniformLocation(text_program, VAR_IEXECUTABLESIZE);
     text_channel0_location = glGetUniformLocation(text_program, VAR_ICHANNEL0);
-    //printf("++++ Text shader created.\n");
+    printf("++++ Text shader created.\n");
     
     // Initialize font texture
-    //printf("font texture width is: %d\n", font_texture_size); // TODO: remove
-    glGenTextures(1, &font_texture_handle);
-    glBindTexture(GL_TEXTURE_2D, font_texture_handle);
+    printf("font texture width is: %d\n", font_texture_size); // TODO: remove
+    glGenTextures(1, &text_font_handle);
+    glBindTexture(GL_TEXTURE_2D, text_font_handle);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, font_texture_size, font_texture_size, 0, GL_RGBA, GL_UNSIGNED_BYTE, font_texture);
     
-    font_texture_width = font_texture_size;
-    
-    progress += .5/NSHADERS;
-    
-    return 0;
-}
-
-DWORD WINAPI LoadLogoSmallThread( LPVOID lpParam)
-{
-#undef VAR_IRESOLUTION
-#undef VAR_ITIME
-#include "gfx/logosmall.h"
-#ifndef VAR_IRESOLUTION
-    #define VAR_IRESOLUTION "iResolution"
-#endif
-#ifndef VAR_ITIME
-    #define VAR_ITIME "iTime"
-#endif
-    int logo_small_size = strlen(logosmall_frag),
-        logo_small_handle = glCreateShader(GL_FRAGMENT_SHADER);
-    logo_small_program = glCreateProgram();
-    glShaderSource(logo_small_handle, 1, (GLchar **)&logosmall_frag, &logo_small_size);
-    glCompileShader(logo_small_handle);
-    //printf("---> Endeavour logo shader:\n");
-    //debug(logo_small_handle);
-    glAttachShader(logo_small_program, logo_small_handle);
-    glLinkProgram(logo_small_program);
-    //printf("---> Endeavour logo program:\n");
-    //debugp(logo_small_program);
-    glUseProgram(logo_small_program);
-    logo_small_time_location =  glGetUniformLocation(logo_small_program, VAR_ITIME);
-    logo_small_resolution_location = glGetUniformLocation(logo_small_program, VAR_IRESOLUTION);
-    //printf("++++ Endeavour logo shader created.\n");
-    
-    progress += .5/NSHADERS;
-    
-    return 0;
-}
-
-DWORD WINAPI LoadNr4Thread( LPVOID lpParam)
-{
-#undef VAR_IRESOLUTION
-#undef VAR_ITIME
-#include "gfx/nr4.h"
-#ifndef VAR_IRESOLUTION
-    #define VAR_IRESOLUTION "iResolution"
-#endif
-#ifndef VAR_ITIME
-    #define VAR_ITIME "iTime"
-#endif
-    int nr4_size = strlen(nr4_frag),
-        nr4_handle = glCreateShader(GL_FRAGMENT_SHADER);
-    nr4_program = glCreateProgram();
-    glShaderSource(nr4_handle, 1, (GLchar **)&nr4_frag, &nr4_size);
-    glCompileShader(nr4_handle);
-    //printf("---> Endeavour NR4 shader:\n");
-    //debug(nr4_handle);
-    glAttachShader(nr4_program, nr4_handle);
-    glLinkProgram(nr4_program);
-    //printf("---> Endeavour NR4 program:\n");
-    //debugp(nr4_program);
-    glUseProgram(nr4_program);
-    nr4_time_location =  glGetUniformLocation(nr4_program, VAR_ITIME);
-    nr4_resolution_location = glGetUniformLocation(nr4_program, VAR_IRESOLUTION);
-    //printf("++++ Endeavour NR4 shader created.\n");
-    
-    progress += .5/NSHADERS;
-    
-    return 0;
-}
-
-DWORD WINAPI LoadQMThread( LPVOID lpParam)
-{
-#undef VAR_IRESOLUTION
-#undef VAR_ITIME
-#include "gfx/qm.h"
-#ifndef VAR_IRESOLUTION
-    #define VAR_IRESOLUTION "iResolution"
-#endif
-#ifndef VAR_ITIME
-    #define VAR_ITIME "iTime"
-#endif
-    int qm_size = strlen(qm_frag),
-        qm_handle = glCreateShader(GL_FRAGMENT_SHADER);
-    qm_program = glCreateProgram();
-    glShaderSource(qm_handle, 1, (GLchar **)&qm_frag, &qm_size);
-    glCompileShader(qm_handle);
-    //printf("---> Endeavour QM shader:\n");
-    //debug(qm_handle);
-    glAttachShader(qm_program, qm_handle);
-    glLinkProgram(qm_program);
-    //printf("---> Endeavour QM program:\n");
-    //debugp(qm_program);
-    glUseProgram(qm_program);
-    qm_time_location =  glGetUniformLocation(qm_program, VAR_ITIME);
-    qm_resolution_location = glGetUniformLocation(qm_program, VAR_IRESOLUTION);
-    //printf("++++ Endeavour QM shader created.\n");
-    
-    progress += .5/NSHADERS;
-    
-    return 0;
-}
-
-DWORD WINAPI LoadTripThread( LPVOID lpParam)
-{
-#undef VAR_IRESOLUTION
-#undef VAR_ITIME
-#include "gfx/trip.h"
-#ifndef VAR_IRESOLUTION
-    #define VAR_IRESOLUTION "iResolution"
-#endif
-#ifndef VAR_ITIME
-    #define VAR_ITIME "iTime"
-#endif
-    int trip_size = strlen(trip_frag),
-        trip_handle = glCreateShader(GL_FRAGMENT_SHADER);
-    trip_program = glCreateProgram();
-    glShaderSource(trip_handle, 1, (GLchar **)&trip_frag, &trip_size);
-    glCompileShader(trip_handle);
-    //printf("---> Endeavour Trip shader:\n");
-    //debug(trip_handle);
-    glAttachShader(trip_program, trip_handle);
-    glLinkProgram(trip_program);
-    //printf("---> Endeavour Trip program:\n");
-    //debugp(trip_program);
-    glUseProgram(trip_program);
-    trip_time_location =  glGetUniformLocation(trip_program, VAR_ITIME);
-    trip_resolution_location = glGetUniformLocation(trip_program, VAR_IRESOLUTION);
-    //printf("++++ Endeavour Trip shader created.\n");
-    
-    progress += .5/NSHADERS;
-    
-    return 0;
-}
-
-DWORD WINAPI LoadSurfaceThread( LPVOID lpParam)
-{
-#undef VAR_IRESOLUTION
-#undef VAR_ITIME
-#include "gfx/surface.h"
-#ifndef VAR_IRESOLUTION
-    #define VAR_IRESOLUTION "iResolution"
-#endif
-#ifndef VAR_ITIME
-    #define VAR_ITIME "iTime"
-#endif
-    int surface_size = strlen(surface_frag),
-        surface_handle = glCreateShader(GL_FRAGMENT_SHADER);
-    surface_program = glCreateProgram();
-    glShaderSource(surface_handle, 1, (GLchar **)&surface_frag, &surface_size);
-    glCompileShader(surface_handle);
-    //printf("---> Endeavour surface shader:\n");
-    //debug(surface_handle);
-    glAttachShader(surface_program, surface_handle);
-    glLinkProgram(surface_program);
-    //printf("---> Endeavour surface program:\n");
-    //debugp(surface_program);
-    glUseProgram(surface_program);
-    surface_time_location =  glGetUniformLocation(surface_program, VAR_ITIME);
-    surface_resolution_location = glGetUniformLocation(surface_program, VAR_IRESOLUTION);
-    //printf("++++ Endeavour surface shader created.\n");
-    
-    progress += .5/NSHADERS;
-    
-    return 0;
-}
-
-DWORD WINAPI LoadHangoutThread( LPVOID lpParam)
-{
-#undef VAR_IRESOLUTION
-#undef VAR_ITIME
-#include "gfx/hangout.h"
-#ifndef VAR_IRESOLUTION
-    #define VAR_IRESOLUTION "iResolution"
-#endif
-#ifndef VAR_ITIME
-    #define VAR_ITIME "iTime"
-#endif
-    int hangout_size = strlen(hangout_frag),
-        hangout_handle = glCreateShader(GL_FRAGMENT_SHADER);
-    hangout_program = glCreateProgram();
-    glShaderSource(hangout_handle, 1, (GLchar **)&hangout_frag, &hangout_size);
-    glCompileShader(hangout_handle);
-    //printf("---> Endeavour hangout shader:\n");
-    //debug(hangout_handle);
-    glAttachShader(hangout_program, hangout_handle);
-    glLinkProgram(hangout_program);
-    //printf("---> Endeavour hangout program:\n");
-    //debugp(hangout_program);
-    glUseProgram(hangout_program);
-    hangout_time_location =  glGetUniformLocation(hangout_program, VAR_ITIME);
-    hangout_resolution_location = glGetUniformLocation(hangout_program, VAR_IRESOLUTION);
-    //printf("++++ Endeavour hangout shader created.\n");
-    
-    progress += .5/NSHADERS;
-    
-    return 0;
-}
-
-DWORD WINAPI LoadFourtwentyThread( LPVOID lpParam)
-{
-#undef VAR_IRESOLUTION
-#undef VAR_ITIME
-#include "gfx/fourtwenty.h"
-#ifndef VAR_IRESOLUTION
-    #define VAR_IRESOLUTION "iResolution"
-#endif
-#ifndef VAR_ITIME
-    #define VAR_ITIME "iTime"
-#endif
-    int fourtwenty_size = strlen(fourtwenty_frag),
-        fourtwenty_handle = glCreateShader(GL_FRAGMENT_SHADER);
-    fourtwenty_program = glCreateProgram();
-    glShaderSource(fourtwenty_handle, 1, (GLchar **)&fourtwenty_frag, &fourtwenty_size);
-    glCompileShader(fourtwenty_handle);
-    //printf("---> Endeavour fourtwenty shader:\n");
-    //debug(fourtwenty_handle);
-    glAttachShader(fourtwenty_program, fourtwenty_handle);
-    glLinkProgram(fourtwenty_program);
-    //printf("---> Endeavour fourtwenty program:\n");
-    //debugp(fourtwenty_program);
-    glUseProgram(fourtwenty_program);
-    fourtwenty_time_location =  glGetUniformLocation(fourtwenty_program, VAR_ITIME);
-    fourtwenty_resolution_location = glGetUniformLocation(fourtwenty_program, VAR_IRESOLUTION);
-    //printf("++++ Endeavour fourtwenty shader created.\n");
-    
-    progress += .5/NSHADERS;
-    
-    return 0;
-}
-
-DWORD WINAPI LoadSolskogenThread( LPVOID lpParam)
-{
-#undef VAR_IRESOLUTION
-#undef VAR_ITIME
-#include "gfx/solskogen.h"
-#ifndef VAR_IRESOLUTION
-    #define VAR_IRESOLUTION "iResolution"
-#endif
-#ifndef VAR_ITIME
-    #define VAR_ITIME "iTime"
-#endif
-    int solskogen_size = strlen(solskogen_frag),
-        solskogen_handle = glCreateShader(GL_FRAGMENT_SHADER);
-    solskogen_program = glCreateProgram();
-    glShaderSource(solskogen_handle, 1, (GLchar **)&solskogen_frag, &solskogen_size);
-    glCompileShader(solskogen_handle);
-    //printf("---> Endeavour solskogen shader:\n");
-    //debug(solskogen_handle);
-    glAttachShader(solskogen_program, solskogen_handle);
-    glLinkProgram(solskogen_program);
-    //printf("---> Endeavour solskogen program:\n");
-    //debugp(solskogen_program);
-    glUseProgram(solskogen_program);
-    solskogen_time_location =  glGetUniformLocation(solskogen_program, VAR_ITIME);
-    solskogen_resolution_location = glGetUniformLocation(solskogen_program, VAR_IRESOLUTION);
-    //printf("++++ Endeavour solskogen shader created.\n");
+    text_font_width = font_texture_size;
     
     progress += .5/NSHADERS;
     
@@ -758,69 +407,6 @@ void draw()
                 glUniform1f(logo210_time_location, t);
                 glUniform2f(logo210_resolution_location, w, h);
             }
-            else if(override_index == 4)
-            {
-                glUseProgram(logo_small_program);
-                glUniform1f(logo_small_time_location, t+15.);
-                t += 15.;
-                glUniform2f(logo_small_resolution_location, w, h);
-            }
-            else if(override_index == 3)
-            {
-                glUseProgram(surface_program);
-                glUniform1f(surface_time_location, t+351.+37.);
-                t += 37.;
-                glUniform2f(surface_resolution_location, w, h);
-            }
-            else if(override_index == 4)
-            {
-                glUseProgram(hangout_program);
-                glUniform1f(hangout_time_location, t);
-                t += 57.;
-                glUniform2f(hangout_resolution_location, w, h);
-            }
-            else if(override_index == 5)
-            {
-                glUseProgram(nr4_program);
-                glUniform1f(nr4_time_location, t);
-                t += 70.;
-                glUniform2f(nr4_resolution_location, w, h);
-            }
-            else if(override_index == 6)
-            {
-                glUseProgram(qm_program);
-                glUniform1f(qm_time_location, t);
-                t += 90.;
-                glUniform2f(qm_resolution_location, w, h);
-            }
-            else if(override_index == 7)
-            {
-                glUseProgram(trip_program);
-                glUniform1f(trip_time_location, t);
-                t += 110.;
-                glUniform2f(trip_resolution_location, w, h);
-            }
-            else if(override_index == 8)
-            {
-                glUseProgram(fourtwenty_program);
-                glUniform1f(fourtwenty_time_location, t+130.);
-                t += 130.;
-                glUniform2f(fourtwenty_resolution_location, w, h);
-            }
-            else if(override_index == 9)
-            {
-                glUseProgram(greet_program);
-                glUniform1f(greet_time_location, t+140.);
-                t += 140.;
-                glUniform2f(greet_resolution_location, w, h);
-            }
-            else if(override_index == 10)
-            {
-                glUseProgram(solskogen_program);
-                glUniform1f(solskogen_time_location, t);
-                t += 168.;
-                glUniform2f(solskogen_resolution_location, w, h);
-            }
         }
         else
         {
@@ -830,60 +416,6 @@ void draw()
                 glUniform1f(logo210_time_location, t);
                 glUniform2f(logo210_resolution_location, w, h);
             }
-            else if(t<37.)
-            {
-                glUseProgram(logo_small_program);
-                glUniform1f(logo_small_time_location, t);
-                glUniform2f(logo_small_resolution_location, w, h);
-            }
-            else if(t<57.)
-            {
-                glUseProgram(surface_program);
-                glUniform1f(surface_time_location, t+351.);
-                glUniform2f(surface_resolution_location, w, h);
-            }
-            else if(t<70.)
-            {
-                glUseProgram(hangout_program);
-                glUniform1f(hangout_time_location, t-57.);
-                glUniform2f(hangout_resolution_location, w, h);
-            }
-            else if(t<90.) //TODO: move to end
-            {
-                glUseProgram(nr4_program);
-                glUniform1f(nr4_time_location, t-70.);
-                glUniform2f(nr4_resolution_location, w, h);
-            }
-            else if(t<110.) //TODO: move to end
-            {
-                glUseProgram(qm_program);
-                glUniform1f(qm_time_location, t-90.);
-                glUniform2f(qm_resolution_location, w, h);
-            }
-            else if(t<130.)
-            {
-                glUseProgram(trip_program);
-                glUniform1f(trip_time_location, t-110.);
-                glUniform2f(trip_resolution_location, w, h);
-            }
-            else if(t<140.)
-            {
-                glUseProgram(fourtwenty_program);
-                glUniform1f(fourtwenty_time_location, t);
-                glUniform2f(fourtwenty_resolution_location, w, h);
-            }
-            else if(t < 168.)
-            {
-                glUseProgram(greet_program);
-                glUniform1f(greet_time_location, t);
-                glUniform2f(greet_resolution_location, w, h);
-            }
-            else if(t < 178.)
-            {
-                glUseProgram(solskogen_program);
-                glUniform1f(solskogen_time_location, t-168.);
-                glUniform2f(solskogen_resolution_location, w, h);
-            }
             else ExitProcess(0);
         }
         quad();
@@ -892,7 +424,6 @@ void draw()
         glUseProgram(text_program);
         glUniform2f(text_resolution_location, w, h);
         glUniform1f(text_font_width_location, font_texture_size);
-        glUniform1f(text_executable_size_location, executable_size);
         glUniform1f(text_time_location, t);
         glUniform1i(text_channel0_location, 0);
         glUniform1i(text_font_location, 1);
@@ -902,7 +433,7 @@ void draw()
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
         
         glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, font_texture_handle);
+        glBindTexture(GL_TEXTURE_2D, text_font_handle);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, font_texture_size, font_texture_size, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
     }
    
@@ -941,7 +472,7 @@ void draw()
         {
             if(!muted)
             {
-                //printf("Rendering SFX block %d/%d -> %le\n", music_block, nblocks1, .5*(float)music_block/(float)nblocks1);
+                printf("Rendering SFX block %d/%d -> %le\n", music_block, nblocks1, .5*(float)music_block/(float)nblocks1);
                 double tstart = (double)(music_block*block_size);
                 
                 glViewport(0,0,texs,texs);
@@ -1080,21 +611,12 @@ LRESULT CALLBACK DialogProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 int WINAPI demo(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow)
 {
-//     //TODO: remove
-//     AllocConsole();
-//     freopen("CONIN$", "r", stdin);
-//     freopen("CONOUT$", "w", stdout);
-//     freopen("CONOUT$", "w", stderr);
-    
-    // Show executable size on top
-#define MAX_PATH 1024
-    char szFileName[MAX_PATH];
-    GetModuleFileName(NULL, szFileName, MAX_PATH);
-    //printf("%s\n", szFileName);
-    
-//     FILE *ex = fopen(szFileName, "rb");
-//     fseek(ex, 0, SEEK_END);
-//     executable_size = (float)ftell(ex)/1024.;
+#ifdef DEBUG
+    AllocConsole();
+    freopen("CONIN$", "r", stdin);
+    freopen("CONOUT$", "w", stdout);
+    freopen("CONOUT$", "w", stderr);
+#endif
     
     // Display settings selector
     WNDCLASS wca = { 0 };
@@ -1195,31 +717,31 @@ int WINAPI demo(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, in
     
     // Populate with entries
     const char *all_scenes = "All scenes",
-        *logo210_scene= "Team210 Logo",
-        *logoendeavor_scene = "Planet rotation",
-        *surface_scene = "Surface with pipes",
-        *hangar_outside_scene = "Hangar outside",
-        *nr4_scene = "NR4 Graffiti build-up",
-        *qm_scene = "QM Graffiti build-up",
-        *trip_scene = "Trip scene",
-        *fourtwenty_scene = "Four-twenty scene",
-        *greet_scene = "Greetings",
-        *solskogen_scene = "Solskogen";
+        *logo210_scene= "Team210 Logo";
+//         *logoendeavor_scene = "Planet rotation",
+//         *surface_scene = "Surface with pipes",
+//         *hangar_outside_scene = "Hangar outside",
+//         *nr4_scene = "NR4 Graffiti build-up",
+//         *qm_scene = "QM Graffiti build-up",
+//         *trip_scene = "Trip scene",
+//         *fourtwenty_scene = "Four-twenty scene",
+//         *greet_scene = "Greetings",
+//         *solskogen_scene = "Solskogen";
     SendMessage(hSceneComboBox,(UINT) CB_ADDSTRING,(WPARAM) 0,(LPARAM) (all_scenes)); 
     SendMessage(hSceneComboBox,(UINT) CB_ADDSTRING,(WPARAM) 0,(LPARAM) (logo210_scene)); 
-    SendMessage(hSceneComboBox,(UINT) CB_ADDSTRING,(WPARAM) 0,(LPARAM) (logoendeavor_scene));
-    SendMessage(hSceneComboBox,(UINT) CB_ADDSTRING,(WPARAM) 0,(LPARAM) (surface_scene));
-    SendMessage(hSceneComboBox,(UINT) CB_ADDSTRING,(WPARAM) 0,(LPARAM) (hangar_outside_scene));
-    SendMessage(hSceneComboBox,(UINT) CB_ADDSTRING,(WPARAM) 0,(LPARAM) (nr4_scene)); 
-    SendMessage(hSceneComboBox,(UINT) CB_ADDSTRING,(WPARAM) 0,(LPARAM) (qm_scene)); 
-    SendMessage(hSceneComboBox,(UINT) CB_ADDSTRING,(WPARAM) 0,(LPARAM) (trip_scene));
-    SendMessage(hSceneComboBox,(UINT) CB_ADDSTRING,(WPARAM) 0,(LPARAM) (fourtwenty_scene));
-    SendMessage(hSceneComboBox,(UINT) CB_ADDSTRING,(WPARAM) 0,(LPARAM) (greet_scene));
-    SendMessage(hSceneComboBox,(UINT) CB_ADDSTRING,(WPARAM) 0,(LPARAM) (solskogen_scene));
+//     SendMessage(hSceneComboBox,(UINT) CB_ADDSTRING,(WPARAM) 0,(LPARAM) (logoendeavor_scene));
+//     SendMessage(hSceneComboBox,(UINT) CB_ADDSTRING,(WPARAM) 0,(LPARAM) (surface_scene));
+//     SendMessage(hSceneComboBox,(UINT) CB_ADDSTRING,(WPARAM) 0,(LPARAM) (hangar_outside_scene));
+//     SendMessage(hSceneComboBox,(UINT) CB_ADDSTRING,(WPARAM) 0,(LPARAM) (nr4_scene)); 
+//     SendMessage(hSceneComboBox,(UINT) CB_ADDSTRING,(WPARAM) 0,(LPARAM) (qm_scene)); 
+//     SendMessage(hSceneComboBox,(UINT) CB_ADDSTRING,(WPARAM) 0,(LPARAM) (trip_scene));
+//     SendMessage(hSceneComboBox,(UINT) CB_ADDSTRING,(WPARAM) 0,(LPARAM) (fourtwenty_scene));
+//     SendMessage(hSceneComboBox,(UINT) CB_ADDSTRING,(WPARAM) 0,(LPARAM) (greet_scene));
+//     SendMessage(hSceneComboBox,(UINT) CB_ADDSTRING,(WPARAM) 0,(LPARAM) (solskogen_scene));
     SendMessage(hSceneComboBox, CB_SETCURSEL, 0, 0);
     
     // Add start button
-    HWND hwndButton = CreateWindow(WC_BUTTON,"Abfahrt!",WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,185,165,90,90,lwnd,(HMENU)7,hInstance,NULL);
+    HWND hwndButton = CreateWindow(WC_BUTTON,"Party!",WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,185,165,90,90,lwnd,(HMENU)7,hInstance,NULL);
     
     // Show the selector
     ShowWindow(lwnd, TRUE);
@@ -1232,12 +754,14 @@ int WINAPI demo(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, in
         DispatchMessage(&msg); 
     }
     
-    //printf("Rendering Demo with:\nSound ");
-//     if(muted)//printf("muted");
-//     else //printf("playing");
-    //printf("\nResolution: %d * %d\n", w, h);
-    //printf("FSAA: %d*\n", fsaa);
-
+#ifdef DEBUG
+    printf("Rendering Demo with:\nSound ");
+//     if(muted)printf("muted");
+//     else printf("playing");
+    printf("\nResolution: %d * %d\n", w, h);
+    printf("FSAA: %d*\n", fsaa);
+#endif
+    
     // Display demo window
     CHAR WindowClass[]  = "Team210 Demo Window";
     
@@ -1335,7 +859,7 @@ int WINAPI demo(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, in
     glUniform1i = (PFNGLUNIFORM1IPROC) wglGetProcAddress("glUniform1i");
     
     // Load loading bar shader
-    //printf("++++ Creating Loading bar.\n");
+    printf("++++ Creating Loading bar.\n");
 #undef VAR_ITIME
 #undef VAR_IPROGRESS
 #undef VAR_IRESOLUTION
@@ -1354,20 +878,20 @@ int WINAPI demo(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, in
     load_program = glCreateProgram();
     glShaderSource(load_handle, 1, (GLchar **)&load_frag, &load_size);
     glCompileShader(load_handle);
-    //printf("---> Load shader:\n");
-    //debug(load_handle);
+    printf("---> Load shader:\n");
+    debug(load_handle);
     glAttachShader(load_program, load_handle);
     glLinkProgram(load_program);
-    //printf("---> Load Program:\n");
-    //debugp(load_program);
+    printf("---> Load Program:\n");
+    debugp(load_program);
     glUseProgram(load_program);
     load_progress_location = glGetUniformLocation(load_program, VAR_IPROGRESS);
     load_time_location = glGetUniformLocation(load_program, VAR_ITIME);
     load_resolution_location = glGetUniformLocation(load_program, VAR_IRESOLUTION);
-    //printf("++++ Loading bar created.\n");
+    printf("++++ Loading bar created.\n");
     
     // Load post processing shader
-    //printf("++++ Creating Post Shader.\n");
+    printf("++++ Creating Post Shader.\n");
 #undef VAR_IFSAA
 #undef VAR_IRESOLUTION
 #undef VAR_ICHANNEL0
@@ -1381,22 +905,22 @@ int WINAPI demo(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, in
 #ifndef VAR_ICHANNEL0
 #define VAR_ICHANNEL0 "iChannel0"
 #endif
-    int post_size = strlen(post_frag),
-        post_handle = glCreateShader(GL_FRAGMENT_SHADER);
+    int post_size = strlen(post_frag);
+    post_handle = glCreateShader(GL_FRAGMENT_SHADER);
     post_program = glCreateProgram();
     glShaderSource(post_handle, 1, (GLchar **)&post_frag, &post_size);
     glCompileShader(post_handle);
-    //printf("---> Post shader:\n");
-    //debug(post_handle);
+    printf("---> Post shader:\n");
+    debug(post_handle);
     glAttachShader(post_program, post_handle);
     glLinkProgram(post_program);
-    //printf("---> Post Program:\n");
-    //debugp(post_program);
+    printf("---> Post Program:\n");
+    debugp(post_program);
     glUseProgram(post_program);
     post_channel0_location = glGetUniformLocation(post_program, VAR_ICHANNEL0);
     post_fsaa_location = glGetUniformLocation(post_program, VAR_IFSAA);
     post_resolution_location = glGetUniformLocation(post_program, VAR_IRESOLUTION);
-    //printf("++++ Post shader created.\n");
+    printf("++++ Post shader created.\n");
     
     // Create framebuffer for rendering first pass to
     glGenFramebuffers(1, &first_pass_framebuffer);
@@ -1413,7 +937,7 @@ int WINAPI demo(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, in
     
     // Generate music framebuffer
     // Initialize sequence texture
-    //printf("sequence texture width is: %d\n", sequence_texture_size); // TODO: remove
+    printf("sequence texture width is: %d\n", sequence_texture_size); // TODO: remove
     glGenTextures(1, &sequence_texture_handle);
     glBindTexture(GL_TEXTURE_2D, sequence_texture_handle);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -1456,46 +980,6 @@ int WINAPI demo(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, in
     
     // Load Logo 210 shader
     LoadLogo210Thread(0);
-    draw();
-    SwapBuffers(hdc);
-    
-    LoadGreetThread(0);
-    draw();
-    SwapBuffers(hdc);
-    
-    LoadTextThread(0);
-    draw();
-    SwapBuffers(hdc);
-    
-    LoadLogoSmallThread(0);
-    draw();
-    SwapBuffers(hdc);
-    
-    LoadNr4Thread(0);
-    draw();
-    SwapBuffers(hdc);
-    
-    LoadQMThread(0);
-    draw();
-    SwapBuffers(hdc);
-    
-    LoadTripThread(0);
-    draw();
-    SwapBuffers(hdc);
-
-    LoadSurfaceThread(0);
-    draw();
-    SwapBuffers(hdc);
-    
-    LoadHangoutThread(0);
-    draw();
-    SwapBuffers(hdc);
-    
-    LoadFourtwentyThread(0);
-    draw();
-    SwapBuffers(hdc);
-    
-    LoadSolskogenThread(0);
     draw();
     SwapBuffers(hdc);
     
