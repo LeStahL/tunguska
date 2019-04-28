@@ -171,11 +171,10 @@ int w = 1920, h = 1080,
     text_font_width_location,
     text_channel0_location, 
     text_font_location,
-    text_font_handle,
+    font_texture_handle,
     text_program, 
     text_handle;
 
-double text_font_width;
 // Demo globals
 #define duration 188.
 double t_start = 0., 
@@ -275,8 +274,8 @@ DWORD WINAPI LoadLogo210Thread( LPVOID lpParam)
 #ifndef VAR_ITIME
     #define VAR_ITIME "iTime"
 #endif
-    int logo210_size = strlen(logo210_frag),
-        logo210_handle = glCreateShader(GL_FRAGMENT_SHADER);
+    int logo210_size = strlen(logo210_frag);
+    logo210_handle = glCreateShader(GL_FRAGMENT_SHADER);
     logo210_program = glCreateProgram();
     glShaderSource(logo210_handle, 1, (GLchar **)&logo210_frag, &logo210_size);
     glCompileShader(logo210_handle);
@@ -343,15 +342,13 @@ DWORD WINAPI LoadTextThread(LPVOID lpParam)
     
     // Initialize font texture
     printf("font texture width is: %d\n", font_texture_size); // TODO: remove
-    glGenTextures(1, &text_font_handle);
-    glBindTexture(GL_TEXTURE_2D, text_font_handle);
+    glGenTextures(1, &font_texture_handle);
+    glBindTexture(GL_TEXTURE_2D, font_texture_handle);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, font_texture_size, font_texture_size, 0, GL_RGBA, GL_UNSIGNED_BYTE, font_texture);
-    
-    text_font_width = font_texture_size;
     
     progress += .5/NSHADERS;
     
@@ -410,7 +407,7 @@ void draw()
         }
         else
         {
-            if(t < 15.)
+            if(t < 9000.)
             {
                 glUseProgram(logo210_program);
                 glUniform1f(logo210_time_location, t);
@@ -433,7 +430,7 @@ void draw()
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
         
         glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, text_font_handle);
+        glBindTexture(GL_TEXTURE_2D, font_texture_handle);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, font_texture_size, font_texture_size, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
     }
    
@@ -873,8 +870,8 @@ int WINAPI demo(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, in
 #ifndef VAR_IRESOLUTION
 #define VAR_IRESOLUTION "iResolution"
 #endif
-    int load_size = strlen(load_frag),
-        load_handle = glCreateShader(GL_FRAGMENT_SHADER);
+    int load_size = strlen(load_frag);
+    load_handle = glCreateShader(GL_FRAGMENT_SHADER);
     load_program = glCreateProgram();
     glShaderSource(load_handle, 1, (GLchar **)&load_frag, &load_size);
     glCompileShader(load_handle);
