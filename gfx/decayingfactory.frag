@@ -138,7 +138,7 @@ void colorize_tiles(in vec2 x, out vec3 col)
         d;
     vec2 y = mod(x, w)-.5*w;
     float n;
-    mfnoise(x, 4.,4.e1, .48, n);
+    mfnoise(x, 4.,4.e2, .48, n);
     
     dbox(y, .47*w*c.xx, d);
     d += .005*n;
@@ -159,7 +159,9 @@ void colorize_tiles(in vec2 x, out vec3 col)
     col = mix(vec3(0.22,0.22,0.22), col, smoothstep(1.5/iResolution.y, -1.5/iResolution.y, d));
     
     // holes
-    col = mix(col, vec3(0.54,0.48,0.45), smoothstep(1.5/iResolution.y, -1.5/iResolution.y, .3+n));
+    float na;
+    mfnoise(x, 4.,4.e2, .98, na);
+    col = mix(col, mix(vec3(0.54,0.48,0.45), .0*c.xxx, .5+.5*na), smoothstep(1.5/iResolution.y, -1.5/iResolution.y, .3+n));
 }
 
 void colorize_wall(in vec2 x, out vec3 col)
