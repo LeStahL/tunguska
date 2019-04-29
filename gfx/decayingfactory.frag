@@ -44,8 +44,8 @@ void mfnoise(in vec2 x, in float fmin, in float fmax, in float alpha, out float 
 // 2D box
 void dbox(in vec2 x, in vec2 b, out float d)
 {
-	vec2 da = abs(x)-b;
-	d = length(max(da,c.yy)) + min(max(da.x,da.y),0.0);
+    vec2 da = abs(x)-b;
+    d = length(max(da,c.yy)) + min(max(da.x,da.y),0.0);
 }
 
 // 3D box
@@ -60,7 +60,7 @@ void dbox3(in vec3 x, in vec3 b, out float d)
 void dvoronoi(in vec2 x, out float d, out vec2 ind)
 {
     vec2 y = floor(x);
-   	float ret = 1.;
+       float ret = 1.;
     
     //find closest control point. ("In which cell am I?")
     vec2 pf=c.yy, p;
@@ -124,6 +124,9 @@ void colorize_wall_concrete(in vec2 x, out vec3 col)
     
     //gray
     col = mix(col, c.yyy, smoothstep(-.2,.4, .3+n3-n));
+    float na;
+    lfnoise(iTime*c.xx, na);
+    col = mix(col, c.yyy, (.5+.5*na)*smoothstep(.1,-.1,abs(.3+n3-n)-.1));
     col = mix(col, mix(vec3(0.45,0.06,0.01), vec3(0.69,0.14,0.04), (.1+.9*n)*smoothstep(-.1,.4,.3+1.4*n3+.7*n)), smoothstep(.3,.7,.3+1.4*n3-.5*n));
 }
 
@@ -240,7 +243,7 @@ void pipes_normal(in vec3 x, out vec3 n)
 
 void wall_tiles_normal(in vec3 x, out vec3 n)
 {
-	const float dx = 5.e-4;
+    const float dx = 5.e-4;
     float s;
     
     wall_tiles(x,s);
@@ -252,7 +255,7 @@ void wall_tiles_normal(in vec3 x, out vec3 n)
 
 void wall_concrete_normal(in vec3 x, out vec3 n)
 {
-	const float dx = 5.e-4;
+    const float dx = 5.e-4;
     float s;
     
     wall_concrete(x,s);
@@ -285,9 +288,16 @@ void scene(in vec3 x, out vec2 sdf)
     if(abs(x.x) < .4)
     {
         float wa = .1;
-    	vec2 sda = vec2(length(vec2(mod(x.x,wa)-.5*wa, x.y-1.2*w-.0*.5*wa))-.4*wa, 2.);
-    	add(sdf, sda, sdf);
+        vec2 sda = vec2(length(vec2(mod(x.x,wa)-.5*wa, x.y-1.2*w))-.4*wa, 2.);
+        add(sdf, sda, sdf);
     }
+    
+    // Add Water
+    float n, n2;
+    lfnoise(12.*x.xz-iTime*c.yx+.1*iTime*c.xy, n);
+    lfnoise(34.5*x.xz-3.141*iTime*c.yx-.1*iTime*c.xy, n2);
+    vec2 sdb = vec2(x.y+.38-.002*(.7*n+.3*n2),3.);
+    add(sdf, sdb, sdf);
 }
 
 void normal(in vec3 x, out vec3 n)
@@ -305,39 +315,9 @@ void normal(in vec3 x, out vec3 n)
     n = normalize(n-s.x);
 }
 
-void mainImage( out vec4 fragColor, in vec2 fragCoord )
+void colorize(in vec3 x, in vec2 s, inout vec3 n, out vec3 col)
 {
-    a = iResolution.x/iResolution.y;
-    vec2 uv = fragCoord/iResolution.yy-0.5*vec2(a, 1.0);
-    vec3 col = c.yyy;
-    
-    vec3 t = vec3(uv, 0.)
-        	-mix(.3,.7, smoothstep(0.,1.,sin(pi*iTime)))*iTime*c.yyx // forward
-        	+.01*abs(cos(2.*pi*iTime))*c.yxy // up/down
-        	+ .005*sin(2.*pi*iTime)*c.xyy, // right/left
-        o = c.yyx
-        	-.3*iTime*c.yyx
-        	+.01*abs(sin(2.*pi*iTime))*c.yxy
-        	+ .005*sin(2.*pi*iTime)*c.xyy,
-        dir = normalize(t-o),
-        x, n;
-    float d = 0.;
-    vec2 s;
-    int N = 300, i;
-    
-    for(i=0; i<N; ++i)
-    {
-        x = o + d * dir;
-        scene(x, s);
-        if(s.x < 1.e-4) break;
-        d += s.x;
-    }
-      
-    if(i<N)
-    {
-        normal(x, n);
-        
-        if(s.y == 1.)
+    if(s.y == 1.)
         {
             // March volumetric texture
             if(abs(dot(n,c.xyy))+abs(dot(n,c.yxy)) < 1.e-4)
@@ -370,14 +350,67 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
                     //col = .2*c.xxx;
             }
         }
-        else
+        else if(s.y == 2.)
         {
             colorize_pipes(6.*x.zx-23., col);
-			pipes_normal(6.*x.zxy-23.*c.xxy, n);
+            pipes_normal(6.*x.zxy-23.*c.xxy, n);
         }
+}
+
+void mainImage( out vec4 fragColor, in vec2 fragCoord )
+{
+    a = iResolution.x/iResolution.y;
+    vec2 uv = fragCoord/iResolution.yy-0.5*vec2(a, 1.0);
+    vec3 col = c.yyy;
+    
+    vec3 t = vec3(uv, 0.)
+            -mix(.3,.7, 0.*smoothstep(0.,1.,sin(pi*iTime)))*iTime*c.yyx // forward
+            +.01*abs(cos(2.*pi*iTime))*c.yxy // up/down
+            + .005*sin(2.*pi*iTime)*c.xyy, // right/left
+        o = c.yyx
+            -.3*iTime*c.yyx
+            +.01*abs(sin(2.*pi*iTime))*c.yxy
+            + .005*sin(2.*pi*iTime)*c.xyy,
+        dir = normalize(t-o),
+        x, n;
+    float d = 0.;
+    vec2 s;
+    int N = 300, i;
+    
+    for(i=0; i<N; ++i)
+    {
+        x = o + d * dir;
+        scene(x, s);
+        if(s.x < 1.e-4) break;
+        d += s.x;
+    }
+      
+    //if(i<N)
+    {
+        normal(x, n);
+        float d0 = d;
+        if(s.y == 3.)
+        {
+            o = x;
+            d = .002;
+            dir = reflect(dir, n);
+            
+            for(i=0; i<N; ++i)
+            {
+                x = o + d * dir;
+                scene(x, s);
+                if(s.x < 1.e-4) break;
+                d += s.x;
+            }
+            
+            //if(i<N)
+                normal(x, n);
+            d = abs(d)+ abs(d0);
+        }
+        colorize(x, s, n, col);
         
-        vec3 l = -normalize(o)/max(d*d,1.);
-        col = .1*col
+        vec3 l = -abs(normalize(o)/max(d*d,1.));
+        col = .1*col/min(d,4.)
             + .6*col*abs(dot(l,n))
             + .3*col*abs(pow(dot(reflect(-l,n),dir),4.));
     }
