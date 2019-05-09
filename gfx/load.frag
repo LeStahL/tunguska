@@ -19,7 +19,7 @@
 
 uniform float iTime, iProgress;
 uniform vec2 iResolution;
- 
+
 // Global constants
 const float pi = acos(-1.);
 const vec3 c = vec3(1.0, 0.0, -1.0);
@@ -238,6 +238,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     rand(ind, r);
     fc = mix(fc, vec3(0.75,0.19,0.24), smoothstep(-ry,ry,v0*v)*r);
     fc = mix(fc, c.yyy, smoothstep(ry,-ry,v));
+    fc = vec3(0.76,0.20,0.25);
     col = mix(col, fc, smoothstep(ry, -ry, d+.03));
     
     // 210 Logo
@@ -249,6 +250,47 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     // Red progress triangle
     dtriangle2(uv-.055*c.yx+.025*c.xy-(-.42+.84*iProgress)*c.xy, .01, d);
     col = mix(col, vec3(0.76,0.20,0.25), smoothstep(ry,-ry, -d));
+    
+    // Upper phone task bar background
+    dbox2(uv-.475*c.yx, vec2(a,.025), d);
+    col = mix(col, vec3(0.24,0.24,0.24), smoothstep(ry,-ry, d));
+    
+    // Attention sign
+    dtriangle2((uv-vec2(-.48*a,.47))*c.xz, .025, d);
+    d = -d;
+    dbox2(uv-vec2(-.48*a,.477), .5*vec2(.005,.017), v);
+    d = max(d,-v);
+    dbox2(uv-vec2(-.48*a,.462), .5*vec2(.005, .005), v);
+    d = max(d,-v);
+    col = mix(col, vec3(0.92,0.89,0.84), smoothstep(ry,-ry,d));
+    
+    // Battery Block
+    dbox2((uv-vec2(.45*a,.475))*c.xz, vec2(.035, .018), d);
+    dbox2((uv-vec2(.47*a,.475))*c.xz, vec2(.008, .01), v);
+    d = min(d,v);
+    col = mix(col, vec3(0.92,0.89,0.84), smoothstep(ry,-ry,d));
+    dbox2((uv-vec2(.439*a,.475))*c.xz, .9*vec2(.015, .018), d);
+    col = mix(col, vec3(0.76,0.20,0.25), smoothstep(ry,-ry,d));
+    
+    // Network information
+    dbox2((uv-vec2(.39*a,.466))*c.xz, vec2(.0055, .009), d);
+    dbox2((uv-vec2(.398*a,.469))*c.xz, vec2(.0055, .012), v);
+	d = min(d,v);
+    dbox2((uv-vec2(.406*a,.472))*c.xz, vec2(.0055, .015), v);
+	d = min(d,v);
+    dbox2((uv-vec2(.414*a,.475))*c.xz, vec2(.0055, .018), v);
+	d = min(d,v);
+    col = mix(col, vec3(0.92,0.89,0.84), smoothstep(ry,-ry,d));
+    
+    // Wifi
+    d = length(uv-vec2(.36*a,.46))-.0025;
+    d = min(d, abs(length(uv-vec2(.36*a,.46))-.01)-.003);
+    d = min(d, abs(length(uv-vec2(.36*a,.46))-.02)-.003);
+    d = min(d, abs(length(uv-vec2(.36*a,.46))-.03)-.003);
+    mat2 m = mat2(cos(pi/4.),-sin(pi/4.), sin(pi/4.), cos(pi/4.));
+    dbox2(m*(uv-vec2(.36*a,.5)), 2.*vec2(.015), v);
+    d = max(d,v);
+    col = mix(col, vec3(0.92,0.89,0.84), smoothstep(ry,-ry,d));
     
     fragColor = vec4(clamp(col,0.0,1.0),1.0);
 }
