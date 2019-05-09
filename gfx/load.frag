@@ -136,51 +136,6 @@ void dprogress(in vec2 x, in vec2 size, out float d)
     d = min(d,da);
 }
 
-// Distance to regular voronoi
-void dvoronoi(in vec2 x, out float d, out vec2 ind)
-{
-    vec2 y = floor(x);
-   	float ret = 1.;
-    
-    //find closest control point. ("In which cell am I?")
-    vec2 pf=c.yy, p;
-    float df=10.;
-    
-    for(int i=-1; i<=1; i+=1)
-        for(int j=-1; j<=1; j+=1)
-        {
-            p = y + vec2(float(i), float(j));
-            float pa;
-            rand(p, pa);
-            p += pa;
-            
-            d = length(x-p);
-            
-            if(d < df)
-            {
-                df = d;
-                pf = p;
-            }
-        }
-    
-    //compute voronoi distance: minimum distance to any edge
-    for(int i=-1; i<=1; i+=1)
-        for(int j=-1; j<=1; j+=1)
-        {
-            p = y + vec2(float(i), float(j));
-            float pa;
-            rand(p, pa);
-            p += pa;
-            
-            vec2 o = p - pf;
-            d = length(.5*o-dot(x-pf, o)/dot(o,o)*o);
-            ret = min(ret, d);
-        }
-    
-    d = ret;
-    ind = pf;
-}
-
 void dteam210(in vec2 x, in float size, out float d)
 {
     dbox2(x, vec2(.2,1.)*size, d);
@@ -212,7 +167,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     vec3 col = c.yyy;
     
     // Progress text
-    float d;
+    float d, v;
     dprogress(uv+.51*c.xy, vec2(.03,.04), d);
     col = mix(col,vec3(0.75,0.20,0.26), smoothstep(ry, -ry, d));
     
@@ -223,22 +178,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     
     // Bar content
     dbox2(uv+(.42-.42*iProgress)*c.xy, vec2(iProgress*.42,.06), d);
-    vec3 fc = mix(vec3(0.24,0.24,0.24), vec3(0.18,0.18,0.18), clamp((uv.x+.42)/.84,0.,1.));
-    vec2 ind;
-    float v, v0;
-    dvoronoi(30.*uv, v, ind);
-    v = abs(v)-.1;
-    fc = mix(fc, vec3(0.75,0.20,0.26), smoothstep(ry,-ry,v));
-    v0 = v;
-    v = abs(v)-.05;
-    float va;
-    dvoronoi(90.*uv, va, ind);
-    v *= va/30.;
-    float r;
-    rand(ind, r);
-    fc = mix(fc, vec3(0.75,0.19,0.24), smoothstep(-ry,ry,v0*v)*r);
-    fc = mix(fc, c.yyy, smoothstep(ry,-ry,v));
-    fc = vec3(0.76,0.20,0.25);
+    vec3 fc = mix(vec3(0.75,0.20,0.26), vec3(0.18,0.18,0.18), clamp((uv.x+.42)/.84,0.,1.));
     col = mix(col, fc, smoothstep(ry, -ry, d+.03));
     
     // 210 Logo
