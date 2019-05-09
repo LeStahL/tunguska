@@ -159,6 +159,14 @@ void dtriangle2(in vec2 uv, in float r, out float d)
 	d = min(d, dot(uv-p2, (p0-p2).yx*c.xz))/length(pd);
 }
 
+// distance to gear
+void dgear(in vec2 x, in vec2 r, in float n, out float d)
+{
+    float p = atan(x.y,x.x);
+    p = mod(p, 2.*pi/n)*n/2./pi;
+    d = mix(length(x)-r.x, length(x)-r.y, step(p,.5));
+}
+
 void mainImage( out vec4 fragColor, in vec2 fragCoord )
 {
     a = iResolution.x/iResolution.y;
@@ -178,7 +186,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     
     // Bar content
     dbox2(uv+(.42-.42*iProgress)*c.xy, vec2(iProgress*.42,.06), d);
-    vec3 fc = mix(vec3(0.75,0.20,0.26), vec3(0.18,0.18,0.18), clamp((uv.x+.42)/.84,0.,1.));
+    vec3 fc = vec3(0.76,0.20,0.25);
     col = mix(col, fc, smoothstep(ry, -ry, d+.03));
     
     // 210 Logo
@@ -231,6 +239,44 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     dbox2(m*(uv-vec2(.36*a,.5)), 2.*vec2(.015), v);
     d = max(d,v);
     col = mix(col, vec3(0.92,0.89,0.84), smoothstep(ry,-ry,d));
+    
+    // Playback bar
+    dbox2(uv-.41*c.yx*c.xz, vec2(.47*a,.003), d);
+    col = mix(col, c.xyy, smoothstep(ry,-ry, d));
+    dbox2(uv-.41*c.yx*c.xz-.4*c.xy, vec2(.47*a-.4,.003), d);
+    col = mix(col, vec3(0.92,0.89,0.84), smoothstep(ry,-ry, d));
+    
+    // Play symbol
+    dtriangle2(((uv-vec2(-.44*a,-.455))).yx*c.xz, .025, d);
+    col = mix(col, vec3(0.92,0.89,0.84), smoothstep(ry,-ry, -d));
+    
+    // Next symbol
+    dtriangle2(((uv-vec2(-.4*a,-.455))).yx*c.xz, .025, d);
+    dbox2(uv-vec2(-.385*a,-.455), vec2(.003, .024), v);
+    d = min(-d,v);
+    col = mix(col, vec3(0.92,0.89,0.84), smoothstep(ry,-ry, d));
+    
+    // Mute symbol
+    dtriangle2(((uv-vec2(-.35*a,-.455))).yx, .025, d);
+    dbox2(uv-vec2(-.36*a,-.455), vec2(.007, .007), v);
+    d = min(-d,v);
+    d = min(d, length(uv-vec2(-.345*a,-.455))-.011);
+    dbox2(uv-vec2(-.344*a,-.455), vec2(.003, .024), v);
+    d = max(d,-v);
+    col = mix(col, vec3(0.92,0.89,0.84), smoothstep(ry,-ry, d));
+    
+    // Settings
+    dgear(uv-vec2(.4*a,-.455), vec2(.02,.025), 8., d);
+    d = max(d, -length(uv-vec2(.4*a,-.455))+.01);
+    col = mix(col, vec3(0.92,0.89,0.84), smoothstep(ry,-ry, d));
+    
+    // Full Screen
+    vec2 y = mod(uv, .03)-.015;
+    dbox2(y, vec2(.01), d);
+    d = abs(d)-.003;
+    dbox2(uv-vec2(.44*a-.0025,-.45), vec2(.02), v);
+	d = max(d,v);
+    col = mix(col, vec3(0.92,0.89,0.84), smoothstep(ry,-ry, d));
     
     fragColor = vec4(clamp(col,0.0,1.0),1.0);
 }
