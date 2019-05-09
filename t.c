@@ -127,7 +127,9 @@ void debugp(int program)
 #define printf(a)
 #endif //DEBUG
 
-int w = 1920, h = 1080,
+int w = 1920, h = 1080;
+
+int
     // SFX
     sfx_program, 
     sfx_handle, 
@@ -205,7 +207,7 @@ GLuint first_pass_framebuffer = 0, first_pass_texture;
 HDC hdc;
 HGLRC glrc;
 GLenum error;
-#define NSHADERS 13.
+#define NSHADERS 3.
 
 float t_load_end = 0.;
 
