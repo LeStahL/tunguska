@@ -371,47 +371,49 @@ void quad()
 // Pure opengl drawing code, essentially cross-platform
 void draw()
 {
-        float t = t_now;
-        if(t > t_end)
-            ExitProcess(0);
-        
-        if(scene_override)
+    glBindFramebuffer(GL_FRAMEBUFFER, first_pass_framebuffer);
+    
+    float t = t_now;
+    if(t > t_end)
+        ExitProcess(0);
+    
+    if(scene_override)
+    {
+        if(override_index == 1)
         {
-            if(override_index == 1)
-            {
-                glUseProgram(logo210_program);
-                glUniform1f(logo210_time_location, t);
-                glUniform2f(logo210_resolution_location, w, h);
-            }
+            glUseProgram(logo210_program);
+            glUniform1f(logo210_time_location, t);
+            glUniform2f(logo210_resolution_location, w, h);
         }
-        else
+    }
+    else
+    {
+        if(t < 9000.)
         {
-            if(t < 9000.)
-            {
-                glUseProgram(logo210_program);
-                glUniform1f(logo210_time_location, t);
-                glUniform2f(logo210_resolution_location, w, h);
-            }
-            else ExitProcess(0);
+            glUseProgram(logo210_program);
+            glUniform1f(logo210_time_location, t);
+            glUniform2f(logo210_resolution_location, w, h);
         }
-        quad();
-        
-        // Render text to buffer
-        glUseProgram(text_program);
-        glUniform2f(text_resolution_location, w, h);
-        glUniform1f(text_font_width_location, font_texture_size);
-        glUniform1f(text_time_location, t);
-        glUniform1i(text_channel0_location, 0);
-        glUniform1i(text_font_location, 1);
-        
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, first_pass_texture);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-        
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, font_texture_handle);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, font_texture_size, font_texture_size, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-   
+        else ExitProcess(0);
+    }
+    quad();
+    
+    // Render text to buffer
+    glUseProgram(text_program);
+    glUniform2f(text_resolution_location, w, h);
+    glUniform1f(text_font_width_location, font_texture_size);
+    glUniform1f(text_time_location, t);
+    glUniform1i(text_channel0_location, 0);
+    glUniform1i(text_font_location, 1);
+    
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, first_pass_texture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+    
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, font_texture_handle);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, font_texture_size, font_texture_size, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+    
     quad();
     
     // Render second pass (Post processing) to screen
@@ -431,9 +433,6 @@ void draw()
     quad();
     
     glBindTexture(GL_TEXTURE_2D, 0);
-    
-    
-    
 }
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -1025,5 +1024,4 @@ int WINAPI demo(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, in
     }
     return msg.wParam;
 }
-
 
