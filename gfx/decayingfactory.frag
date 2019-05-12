@@ -1,3 +1,25 @@
+/* Endeavor by Team210 - 64k intro by Team210 at Revision 2k19
+* Copyright (C) 2018  Alexander Kraus <nr4@z10.info>
+*
+* This program is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
+#version 130
+
+uniform float iTime;
+uniform vec2 iResolution;
+
 // Global constants
 const float pi = acos(-1.);
 const vec3 c = vec3(1.0, 0.0, -1.0);
@@ -425,4 +447,9 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     col = mix(col, gs, .5+.5*na);
     
     fragColor = vec4(col,1.0);
+}
+
+void main()
+{
+    mainImage(gl_FragColor, gl_FragCoord.xy);
 }
