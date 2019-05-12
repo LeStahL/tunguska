@@ -539,183 +539,183 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     a = iResolution.x/iResolution.y;
     vec2 uv = fragCoord/iResolution.yy-0.5*vec2(a, 1.0);
     
-    float d;
-    
-    vec4 old = vec4(-1.,texture(iChannel0, fragCoord/iResolution.xy).rgb), new = old; // Scene
-    
-    // Display time
-    vec4 b = vec4(1., vec3(0.99,0.64,0.02)), bd = vec4(1., .5*vec3(0.99,0.64,0.02));
-    box(uv-vec2(-.48,.45)-.03*sin(iTime)*c.xy, vec2(.2,.02), b.x);    
-    stroke(b.x, .001, bd.x);
-    add(b, bd, b);
-    box(uv-vec2(-.08,.45)-.03*sin(iTime)*c.xy, vec2(.2,.02), bd.x);
-    bd.gba = vec3(0.60,0.06,0.00);
-    add(b, bd, b);
-    stroke(bd.x, .001, bd.x);
-    add(b, bd, b);
-    dfloat(uv-vec2(-.63,.45)-.03*sin(iTime)*c.xy, iTime, .018, bd.x);
-    stroke(bd.x, .004, bd.x);
-    add(b, bd, b);
-    //dfloat(uv-vec2(-.23,.45)-.03*sin(iTime)*c.xy, iExecutableSize, .018, bd.x);
-    dstring(uv-vec2(-.225,.45)-.03*sin(iTime)*c.xy, 6., .018, bd.x);
-    stroke(bd.x, .004, bd.x);
-    bd.gba = vec3(0.99,0.64,0.02);
-    add(b, bd, b);
-    b.gba = mix(old.gba, b.gba, .8);
-    
-    blendadd(old, b, 5., 999., old);
-    
-    if(iTime < 15.)
-    {
-        dstring(uv+.6*c.xy, 3., .05, d); // Team210 present
-        stroke(d, .01, d);
-        new = vec4(d, mix(old.gba, c.xxx, .6));
-        blendadd(old,new,5.,13.,new);
-        
-        dstring(uv+.6*c.xy+.1*c.yx, 4., .03, d); // A production made of joy
-        stroke(d, .005, d);
-        old = vec4(d, mix(old.gba, c.xxx, .6));
-        blendadd(new,old,7.,13.,new);
-    }
-    else if(iTime < 37.)
-    {
-        vec4 c0, c2;
-        
-        dstring(uv+vec2(.55,.4), 0., .09, d); // Endeavour
-        stroke(d, .018, d);
-        new = vec4(d, mix(old.gba, c.xxx, .6));
-        blendadd(old,new,16.,24.,new);
-        
-        // Add revision loading logo
-        float d;
-        window(uv-.5*c.xy, vec2(.5,.5), new.gba, 0., c2);
-        add(c0, c2, c0);
-        drevision(3.*uv-3.*vec2(.5,-.25), 1., d);
-        vec3 revcol = vec3(1.00,0.71,0.02);
-        //mix(new.gba, mix(vec3(0.82,0.00,0.09),vec3(0.45,0.00,0.06),.5-.5*uv.y), .5);
-        add(c0, vec4(d, revcol), c0);
-        blendadd(new, c0, 24.,28., new);
-        
-        window(uv+.4*c.xy, vec2(.6,.4), new.gba, 0., c2);
-        add(c0, c2, c0);
-        progressbar(uv+vec2(.4,.3), .35, .2+.2*sin(iTime), c2);
-        add(c0, c2, c0);
-        dstring(uv+vec2(.6,.05), 72., .014, d); // Booze barrel
-        stroke(d, .003, d);
-        c2 = vec4(d, vec3(1.00,0.71,0.02));
-        add(c0,c2,c0);
-        progressbar(uv+vec2(.4,.2), .35, .5+.5*sin(iTime), c2);
-        add(c0, c2, c0);
-        dstring(uv+vec2(.6,.15), 73., .014, d); // Electric Energy
-        stroke(d, .003, d);
-        c2 = vec4(d, vec3(1.00,0.71,0.02));
-        add(c0,c2,c0);
-        progressbar(uv+vec2(.4,.1), .35, .9+.1*sin(iTime), c2);
-        add(c0, c2, c0);
-        dstring(uv+vec2(.6,.25), 74., .014, d); // Atomic Diesel reserves
-        stroke(d, .003, d);
-        c2 = vec4(d, vec3(1.00,0.71,0.02));
-        add(c0,c2,c0);
-        blendadd(new,c0,28.,35.,new);
-        mix(new,c.xyyy, clamp(iTime-36., 0., 1.));
-    }
-    else if(iTime < 90.)
-    {
-        vec4 bd,bda;
-        box(uv-vec2(-.0,.35)-.03*sin(iTime+.1)*c.xy, vec2(.5,.03), bd.x);
-        bd.gba = mix(old.gba, vec3(1.00,0.65,0.00),.8);
-        dstring(uv-vec2(-.42,.35)-.03*sin(iTime+.1)*c.xy, 8., .020, d); // NR4 - Cybernetic Coding & 
-        stroke(d, .0045, d);
-        bda = vec4(d, mix(new.gba, c.yyy, .9));
-        add(bd,bda,bd);
-        blendadd(old, bd, 71.,88., new);
-        
-        box(uv-vec2(.1,.28)-.03*sin(iTime+.4)*c.xy, vec2(.35,.03), bd.x);
-        bd.gba = mix(new.gba, vec3(1.00,0.65,0.00),.8);
-        dstring(uv-vec2(-.16,.28)-.03*sin(iTime+.4)*c.xy, 5., .020, d); // Genetic Graphics
-        stroke(d, .0045, d);
-        bda = vec4(d, mix(new.gba, c.yyy, .9));
-        add(bd,bda,bd);
-        blendadd(new, bd, 72.,88., new);
-    }
-    else if(iTime < 110.)
-    {
-        vec4 bd,bda;
-        box(uv-vec2(-.0,.35)-.03*sin(iTime+.1)*c.xy, vec2(.72,.03), bd.x);
-        bd.gba = mix(old.gba, vec3(0.40,0.00,0.60),.8);
-        dstring(uv-vec2(-.57,.35)-.03*sin(iTime+.1)*c.xy, 7., .020, d); // QM - Masterful Mathematical Music
-        stroke(d, .0045, d);
-        bda = vec4(d, mix(new.gba, c.xxx, .9));
-        add(bd,bda,bd);
-        blendadd(old, bd, 91.,108., new);
-    }
-    else if(iTime < 130.)
-    {
-        vec4 bd,bda;
-        box(uv-vec2(-.08,.25)-.03*sin(iTime+.1), vec2(.42,.03), bd.x);
-        bd.gba = mix(old.gba, vec3(0.84,0.18,0.53),.8);
-        dstring(uv-vec2(-.42,.25)-.03*sin(iTime+.1), 70., .020, d); // Dont forget to take
-        stroke(d, .0045, d);
-        bda = vec4(d, mix(new.gba, c.xxx, .9));
-        add(bd,bda,bd);
-        blendadd(old, bd, 118.,122., new);
-        
-        box(uv-vec2(.1,.15)-.03*sin(iTime+.4)*c.xy, vec2(.34,.03), bd.x);
-        bd.gba = mix(new.gba, vec3(0.84,0.18,0.53),.8);
-        dstring(uv-vec2(-.08,.15)-.03*sin(iTime+.4)*c.xy, 71., .020, d); // your medicine
-        stroke(d, .0045, d);
-        bda = vec4(d, mix(new.gba, c.xxx, .9));
-        add(bd,bda,bd);
-        blendadd(new, bd, 119.,122., new);
-    }
-    else if(iTime < 140.)
-    {
-        vec4 bd,bda;
-        box(uv-vec2(-.08,.25)-.03*sin(iTime+.1)*c.xy, vec2(.42,.03), bd.x);
-        bd.gba = mix(old.gba, vec3(0.73,0.90,0.22),.8);
-        dstring(uv-vec2(-.42,.25)-.03*sin(iTime+.1)*c.xy, 67., .020, d); // Two times two-ten is
-        stroke(d, .004, d);
-        bda = vec4(d, mix(new.gba, vec3(0.23,0.27,0.16), .6));
-        add(bd,bda,bd);
-        blendadd(old, bd, 132.,138., new);
-        
-        box(uv-vec2(-.08,.15)-.03*sin(iTime+.4)*c.xy, vec2(.18,.03), bd.x);
-        bd.gba = mix(new.gba, vec3(0.73,0.90,0.22),.8);
-        dstring(uv-vec2(-.18,.15)-.03*sin(iTime+.4)*c.xy, 68., .020, d); // today is
-        stroke(d, .004, d);
-        bda = vec4(d, mix(new.gba, vec3(0.23,0.27,0.16), .6));
-        add(bd,bda,bd);
-        blendadd(new, bd, 133.,138., new);
-        
-        box(uv-vec2(-.08,-.05)-.03*sin(iTime+.9)*c.xy, vec2(.9,.08), bd.x);
-        bd.gba = mix(new.gba,c.xxy,.8);
-        dstring(uv-vec2(-.64,-.05)-.03*sin(iTime+.9)*c.xy, 69., .07, d); // four-twenty
-        stroke(d, .016, d);
-        bda = vec4(d, mix(new.gba, vec3(0.23,0.27,0.16), .6));
-        add(bd,bda,bd);
-        blendadd(new, bd, 134.,138., new);
-        
-        box(uv-vec2(+.14,-.17)-.03*sin(iTime+.13)*c.xy, vec2(.42,.03), bd.x);
-        bd.gba = mix(new.gba, vec3(0.73,0.90,0.22),.8);
-        dstring(uv-vec2(-.18,-.17)-.03*sin(iTime+.13)*c.xy, 75., .020, d); // whatever that means
-        stroke(d, .004, d);
-        bda = vec4(d, mix(new.gba, vec3(0.23,0.27,0.16), .6));
-        add(bd,bda,bd);
-        blendadd(new, bd, 135.,138., new);
-    }
-    else if(iTime < 168.) new = old;
-    else if(iTime <178.)
-    {
-        vec4 bd,bda;
-        box(uv-vec2(-.08,.25)-.03*sin(iTime+.1)*c.xy, vec2(.42,.03), bd.x);
-        bd.gba = mix(old.gba, vec3(1.00,0.79,0.05),.8);
-        dstring(uv-vec2(-.42,.25)-.03*sin(iTime+.1)*c.xy, 17., .020, d); // seconds to evoke 2019?
-        stroke(d, .004, d);
-        bda = vec4(d, mix(new.gba, vec3(0.23,0.27,0.16), .6));
-        add(bd,bda,bd);
-        blendadd(old, bd, 170.,177., new);
-    }
-    else new = old;
+//     float d;
+//     
+//     vec4 old = vec4(-1.,texture(iChannel0, fragCoord/iResolution.xy).rgb), new = old; // Scene
+//     
+//     // Display time
+//     vec4 b = vec4(1., vec3(0.99,0.64,0.02)), bd = vec4(1., .5*vec3(0.99,0.64,0.02));
+//     box(uv-vec2(-.48,.45)-.03*sin(iTime)*c.xy, vec2(.2,.02), b.x);    
+//     stroke(b.x, .001, bd.x);
+//     add(b, bd, b);
+//     box(uv-vec2(-.08,.45)-.03*sin(iTime)*c.xy, vec2(.2,.02), bd.x);
+//     bd.gba = vec3(0.60,0.06,0.00);
+//     add(b, bd, b);
+//     stroke(bd.x, .001, bd.x);
+//     add(b, bd, b);
+//     dfloat(uv-vec2(-.63,.45)-.03*sin(iTime)*c.xy, iTime, .018, bd.x);
+//     stroke(bd.x, .004, bd.x);
+//     add(b, bd, b);
+//     //dfloat(uv-vec2(-.23,.45)-.03*sin(iTime)*c.xy, iExecutableSize, .018, bd.x);
+//     dstring(uv-vec2(-.225,.45)-.03*sin(iTime)*c.xy, 6., .018, bd.x);
+//     stroke(bd.x, .004, bd.x);
+//     bd.gba = vec3(0.99,0.64,0.02);
+//     add(b, bd, b);
+//     b.gba = mix(old.gba, b.gba, .8);
+//     
+//     blendadd(old, b, 5., 999., old);
+//     
+//     if(iTime < 15.)
+//     {
+//         dstring(uv+.6*c.xy, 3., .05, d); // Team210 present
+//         stroke(d, .01, d);
+//         new = vec4(d, mix(old.gba, c.xxx, .6));
+//         blendadd(old,new,5.,13.,new);
+//         
+//         dstring(uv+.6*c.xy+.1*c.yx, 4., .03, d); // A production made of joy
+//         stroke(d, .005, d);
+//         old = vec4(d, mix(old.gba, c.xxx, .6));
+//         blendadd(new,old,7.,13.,new);
+//     }
+//     else if(iTime < 37.)
+//     {
+//         vec4 c0, c2;
+//         
+//         dstring(uv+vec2(.55,.4), 0., .09, d); // Endeavour
+//         stroke(d, .018, d);
+//         new = vec4(d, mix(old.gba, c.xxx, .6));
+//         blendadd(old,new,16.,24.,new);
+//         
+//         // Add revision loading logo
+//         float d;
+//         window(uv-.5*c.xy, vec2(.5,.5), new.gba, 0., c2);
+//         add(c0, c2, c0);
+//         drevision(3.*uv-3.*vec2(.5,-.25), 1., d);
+//         vec3 revcol = vec3(1.00,0.71,0.02);
+//         //mix(new.gba, mix(vec3(0.82,0.00,0.09),vec3(0.45,0.00,0.06),.5-.5*uv.y), .5);
+//         add(c0, vec4(d, revcol), c0);
+//         blendadd(new, c0, 24.,28., new);
+//         
+//         window(uv+.4*c.xy, vec2(.6,.4), new.gba, 0., c2);
+//         add(c0, c2, c0);
+//         progressbar(uv+vec2(.4,.3), .35, .2+.2*sin(iTime), c2);
+//         add(c0, c2, c0);
+//         dstring(uv+vec2(.6,.05), 72., .014, d); // Booze barrel
+//         stroke(d, .003, d);
+//         c2 = vec4(d, vec3(1.00,0.71,0.02));
+//         add(c0,c2,c0);
+//         progressbar(uv+vec2(.4,.2), .35, .5+.5*sin(iTime), c2);
+//         add(c0, c2, c0);
+//         dstring(uv+vec2(.6,.15), 73., .014, d); // Electric Energy
+//         stroke(d, .003, d);
+//         c2 = vec4(d, vec3(1.00,0.71,0.02));
+//         add(c0,c2,c0);
+//         progressbar(uv+vec2(.4,.1), .35, .9+.1*sin(iTime), c2);
+//         add(c0, c2, c0);
+//         dstring(uv+vec2(.6,.25), 74., .014, d); // Atomic Diesel reserves
+//         stroke(d, .003, d);
+//         c2 = vec4(d, vec3(1.00,0.71,0.02));
+//         add(c0,c2,c0);
+//         blendadd(new,c0,28.,35.,new);
+//         mix(new,c.xyyy, clamp(iTime-36., 0., 1.));
+//     }
+//     else if(iTime < 90.)
+//     {
+//         vec4 bd,bda;
+//         box(uv-vec2(-.0,.35)-.03*sin(iTime+.1)*c.xy, vec2(.5,.03), bd.x);
+//         bd.gba = mix(old.gba, vec3(1.00,0.65,0.00),.8);
+//         dstring(uv-vec2(-.42,.35)-.03*sin(iTime+.1)*c.xy, 8., .020, d); // NR4 - Cybernetic Coding & 
+//         stroke(d, .0045, d);
+//         bda = vec4(d, mix(new.gba, c.yyy, .9));
+//         add(bd,bda,bd);
+//         blendadd(old, bd, 71.,88., new);
+//         
+//         box(uv-vec2(.1,.28)-.03*sin(iTime+.4)*c.xy, vec2(.35,.03), bd.x);
+//         bd.gba = mix(new.gba, vec3(1.00,0.65,0.00),.8);
+//         dstring(uv-vec2(-.16,.28)-.03*sin(iTime+.4)*c.xy, 5., .020, d); // Genetic Graphics
+//         stroke(d, .0045, d);
+//         bda = vec4(d, mix(new.gba, c.yyy, .9));
+//         add(bd,bda,bd);
+//         blendadd(new, bd, 72.,88., new);
+//     }
+//     else if(iTime < 110.)
+//     {
+//         vec4 bd,bda;
+//         box(uv-vec2(-.0,.35)-.03*sin(iTime+.1)*c.xy, vec2(.72,.03), bd.x);
+//         bd.gba = mix(old.gba, vec3(0.40,0.00,0.60),.8);
+//         dstring(uv-vec2(-.57,.35)-.03*sin(iTime+.1)*c.xy, 7., .020, d); // QM - Masterful Mathematical Music
+//         stroke(d, .0045, d);
+//         bda = vec4(d, mix(new.gba, c.xxx, .9));
+//         add(bd,bda,bd);
+//         blendadd(old, bd, 91.,108., new);
+//     }
+//     else if(iTime < 130.)
+//     {
+//         vec4 bd,bda;
+//         box(uv-vec2(-.08,.25)-.03*sin(iTime+.1), vec2(.42,.03), bd.x);
+//         bd.gba = mix(old.gba, vec3(0.84,0.18,0.53),.8);
+//         dstring(uv-vec2(-.42,.25)-.03*sin(iTime+.1), 70., .020, d); // Dont forget to take
+//         stroke(d, .0045, d);
+//         bda = vec4(d, mix(new.gba, c.xxx, .9));
+//         add(bd,bda,bd);
+//         blendadd(old, bd, 118.,122., new);
+//         
+//         box(uv-vec2(.1,.15)-.03*sin(iTime+.4)*c.xy, vec2(.34,.03), bd.x);
+//         bd.gba = mix(new.gba, vec3(0.84,0.18,0.53),.8);
+//         dstring(uv-vec2(-.08,.15)-.03*sin(iTime+.4)*c.xy, 71., .020, d); // your medicine
+//         stroke(d, .0045, d);
+//         bda = vec4(d, mix(new.gba, c.xxx, .9));
+//         add(bd,bda,bd);
+//         blendadd(new, bd, 119.,122., new);
+//     }
+//     else if(iTime < 140.)
+//     {
+//         vec4 bd,bda;
+//         box(uv-vec2(-.08,.25)-.03*sin(iTime+.1)*c.xy, vec2(.42,.03), bd.x);
+//         bd.gba = mix(old.gba, vec3(0.73,0.90,0.22),.8);
+//         dstring(uv-vec2(-.42,.25)-.03*sin(iTime+.1)*c.xy, 67., .020, d); // Two times two-ten is
+//         stroke(d, .004, d);
+//         bda = vec4(d, mix(new.gba, vec3(0.23,0.27,0.16), .6));
+//         add(bd,bda,bd);
+//         blendadd(old, bd, 132.,138., new);
+//         
+//         box(uv-vec2(-.08,.15)-.03*sin(iTime+.4)*c.xy, vec2(.18,.03), bd.x);
+//         bd.gba = mix(new.gba, vec3(0.73,0.90,0.22),.8);
+//         dstring(uv-vec2(-.18,.15)-.03*sin(iTime+.4)*c.xy, 68., .020, d); // today is
+//         stroke(d, .004, d);
+//         bda = vec4(d, mix(new.gba, vec3(0.23,0.27,0.16), .6));
+//         add(bd,bda,bd);
+//         blendadd(new, bd, 133.,138., new);
+//         
+//         box(uv-vec2(-.08,-.05)-.03*sin(iTime+.9)*c.xy, vec2(.9,.08), bd.x);
+//         bd.gba = mix(new.gba,c.xxy,.8);
+//         dstring(uv-vec2(-.64,-.05)-.03*sin(iTime+.9)*c.xy, 69., .07, d); // four-twenty
+//         stroke(d, .016, d);
+//         bda = vec4(d, mix(new.gba, vec3(0.23,0.27,0.16), .6));
+//         add(bd,bda,bd);
+//         blendadd(new, bd, 134.,138., new);
+//         
+//         box(uv-vec2(+.14,-.17)-.03*sin(iTime+.13)*c.xy, vec2(.42,.03), bd.x);
+//         bd.gba = mix(new.gba, vec3(0.73,0.90,0.22),.8);
+//         dstring(uv-vec2(-.18,-.17)-.03*sin(iTime+.13)*c.xy, 75., .020, d); // whatever that means
+//         stroke(d, .004, d);
+//         bda = vec4(d, mix(new.gba, vec3(0.23,0.27,0.16), .6));
+//         add(bd,bda,bd);
+//         blendadd(new, bd, 135.,138., new);
+//     }
+//     else if(iTime < 168.) new = old;
+//     else if(iTime <178.)
+//     {
+//         vec4 bd,bda;
+//         box(uv-vec2(-.08,.25)-.03*sin(iTime+.1)*c.xy, vec2(.42,.03), bd.x);
+//         bd.gba = mix(old.gba, vec3(1.00,0.79,0.05),.8);
+//         dstring(uv-vec2(-.42,.25)-.03*sin(iTime+.1)*c.xy, 17., .020, d); // seconds to evoke 2019?
+//         stroke(d, .004, d);
+//         bda = vec4(d, mix(new.gba, vec3(0.23,0.27,0.16), .6));
+//         add(bd,bda,bd);
+//         blendadd(old, bd, 170.,177., new);
+//     }
+//     else new = old;
     
     fragColor = vec4(new.gba, 1.);
 }

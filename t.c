@@ -371,30 +371,7 @@ void quad()
 // Pure opengl drawing code, essentially cross-platform
 void draw()
 {
-    if(progress >= 1.)
-        t_load_end = t_now;
-    
-    if(t_now-t_load_end > 5.)
-    {
-        loading = 0;
-        glUseProgram(0.);
-    }
-    
-    // Render first pass
-    glBindFramebuffer(GL_FRAMEBUFFER, first_pass_framebuffer);
-    glViewport(0,0,w,h);
-    glClear(GL_COLOR_BUFFER_BIT);
-    
-    if(loading)
-    {
-        glUseProgram(load_program);
-        glUniform1f(load_progress_location, progress);
-        glUniform2f(load_resolution_location, w, h);
-        glUniform1f(load_time_location, t_now-t_start);
-    }
-    else //TODO: arrange scenes in the right order
-    {
-        float t = t_now-t_load_end-5.;
+        float t = t_now;
         if(t > t_end)
             ExitProcess(0);
         
@@ -434,7 +411,6 @@ void draw()
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, font_texture_handle);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, font_texture_size, font_texture_size, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-    }
    
     quad();
     
@@ -457,51 +433,7 @@ void draw()
     glBindTexture(GL_TEXTURE_2D, 0);
     
     
-    if(music_loading)
-    {
-        glBindFramebuffer(GL_FRAMEBUFFER, snd_framebuffer);
-        glUseProgram(sfx_program);
-        
-        if(music_block >= nblocks1) 
-        {
-            if(!muted)
-                music_loading = 0;
-        }
-        else
-        {
-            if(!muted)
-            {
-                printf("Rendering SFX block %d/%d -> %le\n", music_block, nblocks1, .5*(float)music_block/(float)nblocks1);
-                double tstart = (double)(music_block*block_size);
-                
-                glViewport(0,0,texs,texs);
-                
-                glUniform1f(sfx_volumelocation, 1.);
-                glUniform1f(sfx_samplerate_location, (float)sample_rate);
-                glUniform1f(sfx_blockoffset_location, (float)tstart);
-                glUniform1i(sfx_texs_location, texs);
-                glUniform1i(sfx_sequence_texture_location, 0);
-                glUniform1f(sfx_sequence_width_location, sequence_texture_size);
-                
-                glActiveTexture(GL_TEXTURE0);
-                glBindTexture(GL_TEXTURE_2D, sequence_texture_handle);
-                
-                quad();
-
-                glReadPixels(0, 0, texs, texs, GL_RGBA, GL_UNSIGNED_BYTE, smusic1+music_block*block_size);
-                glFlush();
-                
-                unsigned short *buf = (unsigned short*)smusic1;
-                short *dest = (short*)smusic1;
-                for(int j=2*music_block*block_size; j<2*(music_block+1)*block_size; ++j)
-                    dest[j] = (buf[j]-(1<<15));
-            }
-            
-            progress += .5*1./(float)nblocks1;
-            
-            ++music_block;
-        }
-    }
+    
 }
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -982,6 +914,85 @@ int WINAPI demo(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, in
     draw();
     SwapBuffers(hdc);
     
+    LoadTextThread(0);
+    draw();
+    SwapBuffers(hdc);
+    
+    for(int music_block=0; music_block<nblocks1; ++music_block)
+    {
+        glBindFramebuffer(GL_FRAMEBUFFER, snd_framebuffer);
+        glUseProgram(sfx_program);
+    
+        printf("Rendering SFX block %d/%d -> %le\n", music_block, nblocks1, .5*(float)music_block/(float)nblocks1);
+        double tstart = (double)(music_block*block_size);
+        
+        glViewport(0,0,texs,texs);
+        
+        glUniform1f(sfx_volumelocation, 1.);
+        glUniform1f(sfx_samplerate_location, (float)sample_rate);
+        glUniform1f(sfx_blockoffset_location, (float)tstart);
+        glUniform1i(sfx_texs_location, texs);
+        glUniform1i(sfx_sequence_texture_location, 0);
+        glUniform1f(sfx_sequence_width_location, sequence_texture_size);
+        
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, sequence_texture_handle);
+        
+        quad();
+        
+        glReadPixels(0, 0, texs, texs, GL_RGBA, GL_UNSIGNED_BYTE, smusic1+music_block*block_size);
+        glFlush();
+        
+        unsigned short *buf = (unsigned short*)smusic1;
+        short *dest = (short*)smusic1;
+        if(!muted)
+            for(int j=2*music_block*block_size; j<2*(music_block+1)*block_size; ++j)
+                dest[j] = (buf[j]-(1<<15));
+        else
+            for(int j=2*music_block*block_size; j<2*(music_block+1)*block_size; ++j)
+                dest[j] = 0.;
+        glBindFramebuffer(GL_FRAMEBUFFER, first_pass_framebuffer);
+
+        // Render first pass
+        glViewport(0,0,w,h);
+        glClear(GL_COLOR_BUFFER_BIT);
+        
+        glUseProgram(load_program);
+        glUniform2f(load_resolution_location, w, h);
+        progress += .5/nblocks1;
+        glUniform1f(load_progress_location, progress);
+        
+        quad();
+    
+        // Render second pass (Post processing) to screen
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glClear(GL_COLOR_BUFFER_BIT);
+        glViewport(0,0,w,h);
+        
+        glUseProgram(post_program);
+        glUniform2f(post_resolution_location, w, h);
+        glUniform1f(post_fsaa_location, fsaa);
+        glUniform1i(post_channel0_location, 0);
+        
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, first_pass_texture);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+        
+        quad();
+        
+        glBindTexture(GL_TEXTURE_2D, 0);
+        SwapBuffers(hdc);        
+        
+        while ( PeekMessageA( &msg, NULL, 0, 0, PM_REMOVE ) ) 
+        {
+            if ( msg.message == WM_QUIT ) {
+                return 0;
+            }
+            TranslateMessage( &msg );
+            DispatchMessageA( &msg );
+        }
+    }
+    
     hWaveOut = 0;
     int n_bits_per_sample = 16;
     WAVEFORMATEX wfx = { WAVE_FORMAT_PCM, channels, sample_rate, sample_rate*channels*n_bits_per_sample/8, channels*n_bits_per_sample/8, n_bits_per_sample, 0 };
@@ -1014,4 +1025,5 @@ int WINAPI demo(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, in
     }
     return msg.wParam;
 }
+
 
