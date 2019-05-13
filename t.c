@@ -507,6 +507,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 void updateBar()
 {
+    glBindFramebuffer(GL_FRAMEBUFFER, first_pass_framebuffer);
     MSG msg = { 0 };
     
     // Render first pass
@@ -1032,8 +1033,6 @@ int WINAPI demo(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, in
         else
             for(int j=2*music_block*block_size; j<2*(music_block+1)*block_size; ++j)
                 dest[j] = 0.;
-        glBindFramebuffer(GL_FRAMEBUFFER, first_pass_framebuffer);
-        
         updateBar();
     }
     
