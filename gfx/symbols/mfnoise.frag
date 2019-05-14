@@ -1,8 +1,7 @@
 #version 130
-void main();
-const vec3 c = vec3(1.,0.,-1.);
+// const vec3 c = vec3(1.,0.,-1.);
 void lfnoise(in vec2 x, out float d);
-void mfnoise(in vec2 x, in float d, in float b, in float c, out float n)
+void mfnoise(in vec2 x, in float d, in float b, in float e, out float n)
 {
     n = 0.;
     float a = 1., nf = 0., buf;
@@ -10,8 +9,8 @@ void mfnoise(in vec2 x, in float d, in float b, in float c, out float n)
     {
         lfnoise(f*x, buf);
         n += a*buf;
-        a *= c;
+        a *= e;
         nf += 1.;
     }
-    n *= (1.-c)/(1.-pow(c, nf));
+    n *= (1.-e)/(1.-pow(e, nf));
 }

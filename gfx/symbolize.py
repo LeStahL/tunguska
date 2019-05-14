@@ -31,7 +31,7 @@ for symbol_file in symbol_files:
     with open("symbols/"+symbol_file, "rt") as f:
         symbol_code = f.read()
         f.close()
-    symbol_codes += [ symbol_code.replace('\n', '\"\n\"').replace('#version 130', '#version 130\\n') ]
+    symbol_codes += [ symbol_code.replace('\n', '\"\n\"').replace('#version 130', '#version 130\\n')  + "\\0"]
 
 # Parse command line args
 parser = argparse.ArgumentParser(description='Team210 symbol packer.')
@@ -57,18 +57,19 @@ for inputfile in rest:
     with open(inputfile, "rt") as f:
         input_source_lines = f.readlines()
         f.close()
-    scene_sources += [ ''.join(input_source_lines).replace('#version 130', '#version 130\\n') ]
+    scene_sources += [ ''.join(input_source_lines).replace('#version 130', '#version 130\\n') + "\\0" ]
     
     # Extract symbol list from source file
     scene_symbol_list = []
     for line in input_source_lines:
         if 'void' in line and ';' in line:
-            symbol_name = line.split()[1].split('(')[0]
+            s = line.split()
+            symbol_name = s[s.index('void') + 1].split('(')[0]
             if not symbol_name in symbol_list: 
                 symbol_list += [ symbol_name ]
             scene_symbol_list += [ symbol_name ]
     scene_symbol_lists += [ scene_symbol_list ]
-    
+
     # Extract uniform list from source file
     scene_uniform_list = []
     for line in input_source_lines:
@@ -141,9 +142,9 @@ for i in range(len(scene_names)):
     header_source += "    debug(" + scene_name + "_handle);\n    printf(\">>>>\\n\");\n#endif\n"
     # Program
     header_source += "    " + scene_name + "_program = glCreateProgram();\n"
+    header_source += "    glAttachShader(" + scene_name + "_program," + scene_name + "_handle);\n"
     for symbol in scene_symbol_lists[i]:
         header_source += "    glAttachShader(" + scene_name + "_program," + symbol + "_handle);\n"
-    header_source += "    glAttachShader(" + scene_name + "_program," + scene_name + "_handle);\n"
     header_source += "    glLinkProgram(" + scene_name + "_program);\n"
     header_source += "#ifdef DEBUG\n    printf(\"---> " + scene_name + " Program:\\n\");\n"
     header_source += "    debugp(" + scene_name + "_program);\n    printf(\">>>>\\n\");\n#endif\n"

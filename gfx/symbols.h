@@ -5,20 +5,14 @@
 int rand_handle, lfnoise_handle, mfnoise_handle, dbox_handle, dbox3_handle, dvoronoi_handle;
 const int nsymbols = 6;
 const char *rand_source = "#version 130\n"
-"void main();"
-"uniform float iTime;"
-"uniform vec2 iResolution;"
 "void rand(in vec2 x, out float n)"
 "{"
 "    x += 400.;"
 "    n = fract(sin(dot(sign(x)*abs(x) ,vec2(12.9898,78.233)))*43758.5453);"
 "}"
-"";
+"\0";
 const char *lfnoise_source = "#version 130\n"
-"void main();"
-"uniform float iTime;"
-"uniform vec2 iResolution;"
-"const vec3 c = vec3(1.,0.,-1.);"
+"// const vec3 c = vec3(1.,0.,-1.);"
 "void rand(in vec2 x, out float d);"
 "void lfnoise(in vec2 t, out float n)"
 "{"
@@ -33,14 +27,11 @@ const char *lfnoise_source = "#version 130\n"
 "    v1 = c.zz+2.*mix(v1, v2, t.y);"
 "    n = mix(v1.x, v1.y, t.x);"
 "}"
-"";
+"\0";
 const char *mfnoise_source = "#version 130\n"
-"void main();"
-"uniform float iTime;"
-"uniform vec2 iResolution;"
-"const vec3 c = vec3(1.,0.,-1.);"
+"// const vec3 c = vec3(1.,0.,-1.);"
 "void lfnoise(in vec2 x, out float d);"
-"void mfnoise(in vec2 x, in float d, in float b, in float c, out float n)"
+"void mfnoise(in vec2 x, in float d, in float b, in float e, out float n)"
 "{"
 "    n = 0.;"
 "    float a = 1., nf = 0., buf;"
@@ -48,39 +39,30 @@ const char *mfnoise_source = "#version 130\n"
 "    {"
 "        lfnoise(f*x, buf);"
 "        n += a*buf;"
-"        a *= c;"
+"        a *= e;"
 "        nf += 1.;"
 "    }"
-"    n *= (1.-c)/(1.-pow(c, nf));"
+"    n *= (1.-e)/(1.-pow(e, nf));"
 "}"
-"";
+"\0";
 const char *dbox_source = "#version 130\n"
-"const vec3 c = vec3(1.,0.,-1.);"
-"void main();"
-"uniform float iTime;"
-"uniform vec2 iResolution;"
+"// const vec3 c = vec3(1.,0.,-1.);"
 "void dbox(in vec2 x, in vec2 b, out float d)"
 "{"
 "    vec2 da = abs(x)-b;"
 "    d = length(max(da,c.yy)) + min(max(da.x,da.y),0.0);"
 "}"
-"";
+"\0";
 const char *dbox3_source = "#version 130\n"
-"void main();"
-"uniform float iTime;"
-"uniform vec2 iResolution;"
 "void dbox3(in vec3 x, in vec3 b, out float d)"
 "{"
 "  vec3 da = abs(x) - b;"
 "  d = length(max(da,0.0))"
 "         + min(max(da.x,max(da.y,da.z)),0.0);"
 "}"
-"";
+"\0";
 const char *dvoronoi_source = "#version 130\n"
-"void main();"
-"uniform float iTime;"
-"uniform vec2 iResolution;"
-"const vec3 c = vec3(1.,0.,-1.);"
+"// const vec3 c = vec3(1.,0.,-1.);"
 "void rand(in vec2 x, out float d);"
 "void dvoronoi(in vec2 x, out float d, out vec2 z)"
 "{"
@@ -121,7 +103,7 @@ const char *dvoronoi_source = "#version 130\n"
 "    d = ret;"
 "    z = pf;"
 "}"
-"";
+"\0";
 const char *decayingfactory_source = "/* Endeavor by Team210 - 64k intro by Team210 at Revision 2k19"
 "* Copyright (C) 2018  Alexander Kraus <nr4@z10.info>"
 "*"
@@ -487,7 +469,7 @@ const char *decayingfactory_source = "/* Endeavor by Team210 - 64k intro by Team
 "{"
 "    mainImage(gl_FragColor, gl_FragCoord.xy);"
 "}"
-"";
+"\0";
 void Loadrand()
 {
     int rand_size = strlen(rand_source);
@@ -598,13 +580,13 @@ void Loaddecayingfactory()
     printf(">>>>\n");
 #endif
     decayingfactory_program = glCreateProgram();
+    glAttachShader(decayingfactory_program,decayingfactory_handle);
     glAttachShader(decayingfactory_program,rand_handle);
     glAttachShader(decayingfactory_program,lfnoise_handle);
     glAttachShader(decayingfactory_program,mfnoise_handle);
     glAttachShader(decayingfactory_program,dbox_handle);
     glAttachShader(decayingfactory_program,dbox3_handle);
     glAttachShader(decayingfactory_program,dvoronoi_handle);
-    glAttachShader(decayingfactory_program,decayingfactory_handle);
     glLinkProgram(decayingfactory_program);
 #ifdef DEBUG
     printf("---> decayingfactory Program:\n");

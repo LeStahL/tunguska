@@ -106,7 +106,7 @@ void debug(int shader_handle)
 
 void debugp(int program)
 {
-    printf("    Debugging program.\n");
+    printf("    Debugging program with handle %d.\n", program);
     int compile_status = 0;
     glGetProgramiv(program, GL_LINK_STATUS, &compile_status);
     if(compile_status != GL_TRUE)
@@ -477,7 +477,7 @@ void draw()
         if(t < 9000.)
         {
 //             printf("iTime=%le\n", t);
-            printf("program: %d, timeloc: %d, resloc: %d\n", decayingfactory_program, decayingfactory_iTime_location, decayingfactory_iResolution_location);
+//             printf("program: %d, timeloc: %d, resloc: %d\n", decayingfactory_program, decayingfactory_iTime_location, decayingfactory_iResolution_location);
             glUseProgram(decayingfactory_program);
             glUniform1f(decayingfactory_iTime_location, t);
             glUniform2f(decayingfactory_iResolution_location, w, h);

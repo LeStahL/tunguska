@@ -1,5 +1,4 @@
 #version 130
-void main();
 void dbox3(in vec3 x, in vec3 b, out float d)
 {
   vec3 da = abs(x) - b;
