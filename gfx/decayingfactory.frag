@@ -26,102 +26,12 @@ const vec3 c = vec3(1.0, 0.0, -1.0);
 float a = 1.0;
 
 // Hash function
-void rand(in vec2 x, out float num)
-{
-    x += 400.;
-    num = fract(sin(dot(sign(x)*abs(x) ,vec2(12.9898,78.233)))*43758.5453);
-}
-
-// Arbitrary-frequency 2D noise
-void lfnoise(in vec2 t, out float num)
-{
-    vec2 i = floor(t);
-    t = fract(t);
-    //t = ((6.*t-15.)*t+10.)*t*t*t;  // TODO: add this for slower perlin noise
-    t = smoothstep(c.yy, c.xx, t); // TODO: add this for faster value noise
-    vec2 v1, v2;
-    rand(i, v1.x);
-    rand(i+c.xy, v1.y);
-    rand(i+c.yx, v2.x);
-    rand(i+c.xx, v2.y);
-    v1 = c.zz+2.*mix(v1, v2, t.y);
-    num = mix(v1.x, v1.y, t.x);
-}
-
-// Multi-frequency 2D noise
-void mfnoise(in vec2 x, in float fmin, in float fmax, in float alpha, out float num)
-{
-    num = 0.;
-    float a = 1., nf = 0., buf;
-    for(float f = fmin; f<fmax; f = f*2.)
-    {
-        lfnoise(f*x, buf);
-        num += a*buf;
-        a *= alpha;
-        nf += 1.;
-    }
-    num *= (1.-alpha)/(1.-pow(alpha, nf));
-}
-
-// 2D box
-void dbox(in vec2 x, in vec2 b, out float d)
-{
-    vec2 da = abs(x)-b;
-    d = length(max(da,c.yy)) + min(max(da.x,da.y),0.0);
-}
-
-// 3D box
-void dbox3(in vec3 x, in vec3 b, out float d)
-{
-  vec3 da = abs(x) - b;
-  d = length(max(da,0.0))
-         + min(max(da.x,max(da.y,da.z)),0.0);
-}
-
-// Distance to regular voronoi
-void dvoronoi(in vec2 x, out float d, out vec2 ind)
-{
-    vec2 y = floor(x);
-       float ret = 1.;
-    
-    //find closest control point. ("In which cell am I?")
-    vec2 pf=c.yy, p;
-    float df=10.;
-    
-    for(int i=-1; i<=1; i+=1)
-        for(int j=-1; j<=1; j+=1)
-        {
-            p = y + vec2(float(i), float(j));
-            float pa;
-            rand(p, pa);
-            p += pa;
-            
-            d = length(x-p);
-            
-            if(d < df)
-            {
-                df = d;
-                pf = p;
-            }
-        }
-    
-    //compute voronoi distance: minimum distance to any edge
-    for(int i=-1; i<=1; i+=1)
-        for(int j=-1; j<=1; j+=1)
-        {
-            p = y + vec2(float(i), float(j));
-            float pa;
-            rand(p, pa);
-            p += pa;
-            
-            vec2 o = p - pf;
-            d = length(.5*o-dot(x-pf, o)/dot(o,o)*o);
-            ret = min(ret, d);
-        }
-    
-    d = ret;
-    ind = pf;
-}
+void rand(in vec2 x, out float num);
+void lfnoise(in vec2 t, out float num);
+void mfnoise(in vec2 x, in float fmin, in float fmax, in float alpha, out float num);
+void dbox(in vec2 x, in vec2 b, out float d);
+void dbox3(in vec3 x, in vec3 b, out float d);
+void dvoronoi(in vec2 x, out float d, out vec2 ind);
 
 // Stroke
 void stroke(in float d0, in float s, out float d)

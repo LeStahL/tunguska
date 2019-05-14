@@ -1,5 +1,6 @@
 #version 130
-const vec2 c = vec2(1.,0.);
+const vec3 c = vec3(1.,0.,-1.);
+void main();
 void dbox(in vec2 x, in vec2 b, out float d)
 {
     vec2 da = abs(x)-b;

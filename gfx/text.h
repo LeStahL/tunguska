@@ -545,7 +545,7 @@ const char * text_frag =
 "    \n"
 "//     float d;\n"
 "//     \n"
-"//     vec4 old = vec4(-1.,texture(iChannel0, fragCoord/iResolution.xy).rgb), new = old; // Scene\n"
+"    vec4 old = vec4(-1.,texture(iChannel0, fragCoord/iResolution.xy).rgb), new = old; // Scene\n"
 "//     \n"
 "//     // Display time\n"
 "//     vec4 b = vec4(1., vec3(0.99,0.64,0.02)), bd = vec4(1., .5*vec3(0.99,0.64,0.02));\n"

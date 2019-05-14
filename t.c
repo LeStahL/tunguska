@@ -168,10 +168,10 @@ int
     logo210_handle,
     
     // Decaying factory
-    decayingfactory_time_location, 
-    decayingfactory_resolution_location,
-    decayingfactory_program, 
-    decayingfactory_handle,
+//     decayingfactory_time_location, 
+//     decayingfactory_resolution_location,
+//     decayingfactory_program, 
+//     decayingfactory_handle,
     
     // Text
     text_time_location, 
@@ -265,7 +265,7 @@ DWORD WINAPI LoadMusicThread( LPVOID lpParam)
     printf("++++ SFX shader created.\n");
     
     music_loading = 1;
-    progress += .5/NSHADERS; 
+    progress += .1/NSHADERS; 
     
     return 0;
 }
@@ -298,43 +298,43 @@ DWORD WINAPI LoadLogo210Thread( LPVOID lpParam)
     logo210_resolution_location = glGetUniformLocation(logo210_program, VAR_IRESOLUTION);
     printf("++++ Logo 210 shader created.\n");
     
-    progress += .5/NSHADERS;
+    progress += .1/NSHADERS;
     
     return 0;
 }
 
-DWORD WINAPI LoadDecayingfactoryThread( LPVOID lpParam)
-{
-    // Load gfx shader
-#undef VAR_IRESOLUTION
-#undef VAR_ITIME
-#include "gfx/decayingfactory.h"
-#ifndef VAR_IRESOLUTION
-    #define VAR_IRESOLUTION "iResolution"
-#endif
-#ifndef VAR_ITIME
-    #define VAR_ITIME "iTime"
-#endif
-    int decayingfactory_size = strlen(decayingfactory_frag);
-    decayingfactory_handle = glCreateShader(GL_FRAGMENT_SHADER);
-    decayingfactory_program = glCreateProgram();
-    glShaderSource(decayingfactory_handle, 1, (GLchar **)&decayingfactory_frag, &decayingfactory_size);
-    glCompileShader(decayingfactory_handle);
-    printf("---> Decaying factory shader:\n");
-    debug(decayingfactory_handle);
-    glAttachShader(decayingfactory_program, decayingfactory_handle);
-    glLinkProgram(decayingfactory_program);
-    printf("---> Decaying factory program:\n");
-    debugp(decayingfactory_program);
-    glUseProgram(decayingfactory_program);
-    decayingfactory_time_location =  glGetUniformLocation(decayingfactory_program, VAR_ITIME);
-    decayingfactory_resolution_location = glGetUniformLocation(decayingfactory_program, VAR_IRESOLUTION);
-    printf("++++ Decaying factory shader created.\n");
-    
-    progress += .5/NSHADERS;
-    
-    return 0;
-}
+// DWORD WINAPI LoadDecayingfactoryThread( LPVOID lpParam)
+// {
+//     // Load gfx shader
+// #undef VAR_IRESOLUTION
+// #undef VAR_ITIME
+// #include "gfx/decayingfactory.h"
+// #ifndef VAR_IRESOLUTION
+//     #define VAR_IRESOLUTION "iResolution"
+// #endif
+// #ifndef VAR_ITIME
+//     #define VAR_ITIME "iTime"
+// #endif
+//     int decayingfactory_size = strlen(decayingfactory_frag);
+//     decayingfactory_handle = glCreateShader(GL_FRAGMENT_SHADER);
+//     decayingfactory_program = glCreateProgram();
+//     glShaderSource(decayingfactory_handle, 1, (GLchar **)&decayingfactory_frag, &decayingfactory_size);
+//     glCompileShader(decayingfactory_handle);
+//     printf("---> Decaying factory shader:\n");
+//     debug(decayingfactory_handle);
+//     glAttachShader(decayingfactory_program, decayingfactory_handle);
+//     glLinkProgram(decayingfactory_program);
+//     printf("---> Decaying factory program:\n");
+//     debugp(decayingfactory_program);
+//     glUseProgram(decayingfactory_program);
+//     decayingfactory_time_location =  glGetUniformLocation(decayingfactory_program, VAR_ITIME);
+//     decayingfactory_resolution_location = glGetUniformLocation(decayingfactory_program, VAR_IRESOLUTION);
+//     printf("++++ Decaying factory shader created.\n");
+//     
+//     progress += .5/NSHADERS;
+//     
+//     return 0;
+// }
 
 #include "font/font.h"
 DWORD WINAPI LoadTextThread(LPVOID lpParam)
@@ -391,7 +391,7 @@ DWORD WINAPI LoadTextThread(LPVOID lpParam)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, font_texture_size, font_texture_size, 0, GL_RGBA, GL_UNSIGNED_BYTE, font_texture);
     
-    progress += .5/NSHADERS;
+    progress += .1/NSHADERS;
     
     return 0;
 }
@@ -407,6 +407,53 @@ void quad()
     glFlush();
 }
 
+void updateBar()
+{
+    glBindFramebuffer(GL_FRAMEBUFFER, first_pass_framebuffer);
+    MSG msg = { 0 };
+    
+    // Render first pass
+    glViewport(0,0,w,h);
+    glClear(GL_COLOR_BUFFER_BIT);
+    
+    glUseProgram(load_program);
+    glUniform2f(load_resolution_location, w, h);
+    progress += .5/nblocks1;
+    glUniform1f(load_progress_location, progress);
+    
+    quad();
+    
+    // Render second pass (Post processing) to screen
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glViewport(0,0,w,h);
+    
+    glUseProgram(post_program);
+    glUniform2f(post_resolution_location, w, h);
+    glUniform1f(post_fsaa_location, fsaa);
+    glUniform1i(post_channel0_location, 0);
+    
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, first_pass_texture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+    
+    quad();
+    
+    glBindTexture(GL_TEXTURE_2D, 0);
+    SwapBuffers(hdc);        
+    
+    while ( PeekMessageA( &msg, NULL, 0, 0, PM_REMOVE ) ) 
+    {
+        if ( msg.message == WM_QUIT ) {
+            return 0;
+        }
+        TranslateMessage( &msg );
+        DispatchMessageA( &msg );
+    }
+}
+
+#include "gfx/symbols.h"
+
 // Pure opengl drawing code, essentially cross-platform
 void draw()
 {
@@ -421,17 +468,19 @@ void draw()
         if(override_index == 1)
         {
             glUseProgram(decayingfactory_program);
-            glUniform1f(decayingfactory_time_location, t);
-            glUniform2f(decayingfactory_resolution_location, w, h);
+            glUniform1f(decayingfactory_iTime_location, t);
+            glUniform2f(decayingfactory_iResolution_location, w, h);
         }
     }
     else
     {
         if(t < 9000.)
         {
+//             printf("iTime=%le\n", t);
+            printf("program: %d, timeloc: %d, resloc: %d\n", decayingfactory_program, decayingfactory_iTime_location, decayingfactory_iResolution_location);
             glUseProgram(decayingfactory_program);
-            glUniform1f(decayingfactory_time_location, t);
-            glUniform2f(decayingfactory_resolution_location, w, h);
+            glUniform1f(decayingfactory_iTime_location, t);
+            glUniform2f(decayingfactory_iResolution_location, w, h);
         }
         else ExitProcess(0);
     }
@@ -503,51 +552,6 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             
     }
     return DefWindowProc(hwnd, uMsg, wParam, lParam);
-}
-
-void updateBar()
-{
-    glBindFramebuffer(GL_FRAMEBUFFER, first_pass_framebuffer);
-    MSG msg = { 0 };
-    
-    // Render first pass
-    glViewport(0,0,w,h);
-    glClear(GL_COLOR_BUFFER_BIT);
-    
-    glUseProgram(load_program);
-    glUniform2f(load_resolution_location, w, h);
-    progress += .5/nblocks1;
-    glUniform1f(load_progress_location, progress);
-    
-    quad();
-    
-    // Render second pass (Post processing) to screen
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glClear(GL_COLOR_BUFFER_BIT);
-    glViewport(0,0,w,h);
-    
-    glUseProgram(post_program);
-    glUniform2f(post_resolution_location, w, h);
-    glUniform1f(post_fsaa_location, fsaa);
-    glUniform1i(post_channel0_location, 0);
-    
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, first_pass_texture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-    
-    quad();
-    
-    glBindTexture(GL_TEXTURE_2D, 0);
-    SwapBuffers(hdc);        
-    
-    while ( PeekMessageA( &msg, NULL, 0, 0, PM_REMOVE ) ) 
-    {
-        if ( msg.message == WM_QUIT ) {
-            return 0;
-        }
-        TranslateMessage( &msg );
-        DispatchMessageA( &msg );
-    }
 }
 
 LRESULT CALLBACK DialogProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -992,9 +996,13 @@ int WINAPI demo(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, in
     SwapBuffers(hdc);
     
     // Load Logo 210 shader
-    LoadDecayingfactoryThread(0);
-    updateBar();
-    SwapBuffers(hdc);
+//     LoadDecayingfactoryThread(0);
+//     updateBar();
+//     SwapBuffers(hdc);
+    
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    LoadSymbols();
+    LoadPrograms();
     
     LoadTextThread(0);
     updateBar();
@@ -1035,6 +1043,8 @@ int WINAPI demo(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, in
                 dest[j] = 0.;
         updateBar();
     }
+    
+    glUseProgram(0);
     
     hWaveOut = 0;
     int n_bits_per_sample = 16;

@@ -541,7 +541,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     
 //     float d;
 //     
-//     vec4 old = vec4(-1.,texture(iChannel0, fragCoord/iResolution.xy).rgb), new = old; // Scene
+    vec4 old = vec4(-1.,texture(iChannel0, fragCoord/iResolution.xy).rgb), new = old; // Scene
 //     
 //     // Display time
 //     vec4 b = vec4(1., vec3(0.99,0.64,0.02)), bd = vec4(1., .5*vec3(0.99,0.64,0.02));

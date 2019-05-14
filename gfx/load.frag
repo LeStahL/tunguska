@@ -128,10 +128,10 @@ void dnumber(in vec2 x, in int number, in vec2 size, out float d)
 // Convert progress to %.2d
 void dprogress(in vec2 x, in vec2 size, out float d)
 {
-    int n = int(floor(10.*iProgress));
+    int n = int(floor(10.*clamp(iProgress,0.,.9999)));
     dnumber(x, n, size, d);
     float da;
-    n = int(floor(100.*iProgress)) - 10 * n;
+    n = int(floor(100.*clamp(iProgress,0.,.9999))) - 10 * n;
     dnumber(x-2.1*size.x*c.xy, n, size, da);
     d = min(d,da);
 }
@@ -185,18 +185,18 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     col = mix(col, vec3(0.92,0.89,0.84), smoothstep(ry, -ry, d));
     
     // Bar content
-    dbox2(uv+(.42-.42*iProgress)*c.xy, vec2(iProgress*.42,.06), d);
+    dbox2(uv+(.42-.42*clamp(iProgress,0.,.9999))*c.xy, vec2(clamp(iProgress,0.,.9999)*.42,.06), d);
     vec3 fc = vec3(0.76,0.20,0.25);
     col = mix(col, fc, smoothstep(ry, -ry, d+.03));
     
     // 210 Logo
-    dteam210(uv-.13*c.yx+.025*c.xy-(-.42+.84*iProgress)*c.xy, .05, d);
+    dteam210(uv-.13*c.yx+.025*c.xy-(-.42+.84*clamp(iProgress,0.,.9999))*c.xy, .05, d);
     col = mix(col, vec3(0.24,0.24,0.24), smoothstep(ry,-ry,d));
     d = abs(d-.01)-.002;
     col = mix(col, vec3(0.92,0.89,0.84), smoothstep(ry,-ry,d));
     
     // Red progress triangle
-    dtriangle2(uv-.055*c.yx+.025*c.xy-(-.42+.84*iProgress)*c.xy, .01, d);
+    dtriangle2(uv-.055*c.yx+.025*c.xy-(-.42+.84*clamp(iProgress,0.,.9999))*c.xy, .01, d);
     col = mix(col, vec3(0.76,0.20,0.25), smoothstep(ry,-ry, -d));
     
     // Upper phone task bar background

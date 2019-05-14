@@ -1,4 +1,5 @@
 #version 130
+void main();
 void rand(in vec2 x, out float n)
 {
     x += 400.;
