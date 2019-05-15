@@ -40,44 +40,44 @@ void stroke(in float d, in float s, out float dst);
 // Scene
 void scene(in vec3 x, out vec2 d)
 {
-  x.y += .1*iTime;
-  float n;
-  
-  // Floor
-  mfnoise(x.xy, 4.,4.e2,.35, n);
-  d = vec2(x.z-.05*n,1.);
-  
-  // Trees
-  float v, da;
-  vec2 vi;
-  dvoronoi(x.xy, v, vi);
-  vec2 r;
-  rand(vi, r.x);
-  rand(vi+1301., r.y);
-  vec2 y = x.xy-vi, 
-    n2;
-  lfnoise(3.*x.z*c.xx-r,n2.x);
-  lfnoise(4.*x.z*c.xx+33.1*r, n2.y);
-  da = length(y-.01*n2)-.07*mix(1.,.7,smoothstep(0., 1.,clamp(x.z*3.,0.,1.)));
-  //zextrude(x.z,-da,10.,da);
-  //add(d, vec2(da,2.), d);
-  smoothmin(d.x,da,.2,d.x);
-  d.y = mix(1.,2.,step(.1*n,x.z));
-  
-  // smaller branches
-  float z = mod(x.z,.05)-.025, zi = (x.z-z)/.05;
-  vec2 rp;//= vec2(0;
-  rand(zi*c.xx+r,rp.x);
-  rand(zi*c.xx+r+1332.,rp.y);
-  rp *= vec2(1.,2.*pi);
+    x.y += .1*iTime;
+    float n;
+    
+    // Floor
+    mfnoise(x.xy, 4.,4.e2,.35, n);
+    d = vec2(x.z-.05*n,1.);
+    
+    // Trees
+    float v, da;
+    vec2 vi;
+    dvoronoi(x.xy, v, vi);
+    vec2 r;
+    rand(vi, r.x);
+    rand(vi+1301., r.y);
+    vec2 y = x.xy-vi, 
+        n2;
+    lfnoise(3.*x.z*c.xx-r,n2.x);
+    lfnoise(4.*x.z*c.xx+33.1*r, n2.y);
+    da = length(y-.01*n2)-.07*mix(1.,.7,smoothstep(0., 1.,clamp(x.z*3.,0.,1.)));
+    //zextrude(x.z,-da,10.,da);
+    //add(d, vec2(da,2.), d);
+    smoothmin(d.x,da,.2,d.x);
+    d.y = mix(1.,2.,step(.1*n,x.z));
+    
+    // smaller branches
+    float z = mod(x.z,.05)-.025, zi = (x.z-z)/.05;
+    vec2 rp;//= vec2(0;
+    rand(zi*c.xx+r,rp.x);
+    rand(zi*c.xx+r+1332.,rp.y);
+    rp *= vec2(1.,2.*pi);
 
-  float nz;
-  lfnoise(5.*length(y-.01*n2)*c.xx, nz);
-  
+    float nz;
+    lfnoise(5.*length(y-.01*n2)*c.xx-33.*zi, nz);
+    
 
-  line(vec3(y-.01*n2, z+.01*nz), c.yyy, vec3(rp.x*vec2(cos(rp.y),sin(rp.y)),.05*rp.x), da);
-  stroke(da, mix(1.,.1,smoothstep(0.,1.,clamp(length(vec3(y-.01*n2, z))/.7,0.,1.)))*.01*(.3+rp.x+n2.x), da);
-  smoothmin(d.x,da,.05,d.x);
+    line(vec3(y-.01*n2, z+.01*nz), c.yyy, vec3(rp.x*vec2(cos(rp.y),sin(rp.y)),.05*rp.x), da);
+    stroke(da, mix(1.,.1,smoothstep(0.,1.,clamp(length(vec3(y-.01*n2, z))/.7,0.,1.)))*.01*(.3+rp.x+n2.x), da);
+    smoothmin(d.x,da,.05,d.x);
 }
 
 // Normal
@@ -139,15 +139,15 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     {
       
     col = .2*vec3(0.05,0.12,0.12)
-            + .2*vec3(0.05,0.12,0.12)*abs(dot(l,n))
-           +.6*vec3(0.04,0.13,0.12)*abs(pow(dot(reflect(-l,n),dir),3.));
+        + .2*vec3(0.05,0.12,0.12)*abs(dot(l,n))
+        + .6*vec3(0.04,0.13,0.12)*abs(pow(dot(reflect(-l,n),dir),3.));
     }
     if(s.y == 1.)
     {
-      colorize(x.xy,col);
-      .5*col
+        colorize(x.xy,col);
+            .5*col
             + .2*col*abs(dot(l,n))
-           +.6*col*abs(pow(dot(reflect(-l,n),dir),3.));
+            +.6*col*abs(pow(dot(reflect(-l,n),dir),3.));
     }
     
     col = mix(col, mix(vec3(0.91,0.87,0.68),vec3(0.07,0.21,0.21),clamp(length(uv),0.,1.)), clamp(d/10.,0.,1.));
