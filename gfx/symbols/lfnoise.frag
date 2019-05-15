@@ -1,5 +1,5 @@
 #version 130
-// const vec3 c = vec3(1.,0.,-1.);
+const vec3 c = vec3(1.,0.,-1.);
 void rand(in vec2 x, out float d);
 void lfnoise(in vec2 t, out float n)
 {

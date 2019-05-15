@@ -31,7 +31,7 @@ for symbol_file in symbol_files:
     with open("symbols/"+symbol_file, "rt") as f:
         symbol_code = f.read()
         f.close()
-    symbol_codes += [ symbol_code.replace('\n', '\"\n\"').replace('#version 130', '#version 130\\n')  + "\\0"]
+    symbol_codes += [ symbol_code.replace('\n', '\\n\"\n\"').replace('#version 130', '#version 130\\n')  + "\\0"]
 
 # Parse command line args
 parser = argparse.ArgumentParser(description='Team210 symbol packer.')
@@ -54,10 +54,15 @@ for inputfile in rest:
     scene_names += [ inputfile.replace(".frag", "") ]
     
     input_source_lines = None
+    input_source = ""
     with open(inputfile, "rt") as f:
-        input_source_lines = f.readlines()
+        input_source = f.read()
         f.close()
-    scene_sources += [ ''.join(input_source_lines).replace('#version 130', '#version 130\\n') + "\\0" ]
+    #print(input_source)
+    scene_sources += [ input_source.replace('\n', '\\n\"\n\"').replace('#version 130', '#version 130\\n') + "\\0" ]
+    input_source_lines = input_source.split('\n')
+    input_source_lines = [ l + "\n" for l in input_source_lines ]
+    print(input_source_lines)
     
     # Extract symbol list from source file
     scene_symbol_list = []
@@ -89,7 +94,7 @@ header_source += "const int nsymbols = " + str(len(symbol_list)) + ";\n"
 for i in range(len(symbol_list)):
     header_source += "const char *" + symbol_list[i]+"_source = \"" + symbol_codes[symbol_names.index(symbol_list[i])] + "\";\n"
 for i in range(len(scene_names)):
-    header_source += "const char *" + scene_names[i] + "_source = \"" + scene_sources[i].replace('\n', '\"\n\"').replace('#version 130', '#version 130\\n') + "\";\n"
+    header_source += "const char *" + scene_names[i] + "_source = \"" + scene_sources[i] + "\";\n"
 for i in range(len(symbol_list)):
     header_source += "void Load" + symbol_list[i] + "()\n{\n    int " + symbol_list[i] + "_size"
     header_source += " = strlen(" + symbol_list[i]+"_source);\n    "
