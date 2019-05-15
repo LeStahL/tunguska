@@ -32,12 +32,9 @@ void mfnoise(in vec2 x, in float fmin, in float fmax, in float alpha, out float 
 void dbox(in vec2 x, in vec2 b, out float d);
 void dbox3(in vec3 x, in vec3 b, out float d);
 void dvoronoi(in vec2 x, out float d, out vec2 ind);
-
-// Stroke
-void stroke(in float d0, in float s, out float d)
-{
-    d = abs(d0)-s;
-}
+void normal(in vec3 x, out vec3 n);
+void stroke(in float d0, in float s, out float d);
+void add(in vec2 sda, in vec2 sdb, out vec2 sdf);
 
 void colorize_wall_concrete(in vec2 x, out vec3 col)
 {
@@ -199,11 +196,6 @@ void wall_concrete_normal(in vec3 x, out vec3 n)
     n = normalize(n-s);
 }
 
-void add(in vec2 sda, in vec2 sdb, out vec2 sdf)
-{
-    sdf = mix(sda, sdb, step(sdb.x, sda.x));
-}
-
 void scene(in vec3 x, out vec2 sdf)
 {
     float d;
@@ -232,21 +224,6 @@ void scene(in vec3 x, out vec2 sdf)
     lfnoise(34.5*x.xz-3.141*iTime*c.yx-.1*iTime*c.xy, n2);
     vec2 sdb = vec2(x.y+.38-.002*(.7*n+.3*n2),3.);
     add(sdf, sdb, sdf);
-}
-
-void normal(in vec3 x, out vec3 n)
-{
-    const float dx = 5.e-4;
-    vec2 s, na;
-    
-    scene(x,s);
-    scene(x+dx*c.xyy, na);
-    n.x = na.x;
-    scene(x+dx*c.yxy, na);
-    n.y = na.x;
-    scene(x+dx*c.yyx, na);
-    n.z = na.x;
-    n = normalize(n-s.x);
 }
 
 void colorize(in vec3 x, in vec2 s, inout vec3 n, out vec3 col)

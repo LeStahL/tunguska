@@ -2,8 +2,8 @@
 #ifndef SYMBOLIZE_H
 #define SYMBOLIZE_H
 
-int rand_handle, lfnoise_handle, mfnoise_handle, dbox_handle, dbox3_handle, dvoronoi_handle;
-const int nsymbols = 6;
+int rand_handle, lfnoise_handle, mfnoise_handle, dbox_handle, dbox3_handle, dvoronoi_handle, normal_handle, stroke_handle, add_handle;
+const int nsymbols = 9;
 const char *rand_source = "#version 130\n\n"
 "void rand(in vec2 x, out float n)\n"
 "{\n"
@@ -104,6 +104,34 @@ const char *dvoronoi_source = "#version 130\n\n"
 "    z = pf;\n"
 "}\n"
 "\0";
+const char *normal_source = "const vec3 c = vec3(1.0, 0.0, -1.0);\n"
+"void scene(in vec3 x, out vec2 s);\n"
+"void normal(in vec3 x, out vec3 n)\n"
+"{\n"
+"    const float dx = 5.e-4;\n"
+"    vec2 s, na;\n"
+"    \n"
+"    scene(x,s);\n"
+"    scene(x+dx*c.xyy, na);\n"
+"    n.x = na.x;\n"
+"    scene(x+dx*c.yxy, na);\n"
+"    n.y = na.x;\n"
+"    scene(x+dx*c.yyx, na);\n"
+"    n.z = na.x;\n"
+"    n = normalize(n-s.x);\n"
+"}\n"
+"\0";
+const char *stroke_source = "// Stroke\n"
+"void stroke(in float d0, in float s, out float d)\n"
+"{\n"
+"    d = abs(d0)-s;\n"
+"}\n"
+"\0";
+const char *add_source = "void add(in vec2 sda, in vec2 sdb, out vec2 sdf)\n"
+"{\n"
+"    sdf = mix(sda, sdb, step(sdb.x, sda.x));\n"
+"}\n"
+"\0";
 const char *decayingfactory_source = "/* Endeavor by Team210 - 64k intro by Team210 at Revision 2k19\n"
 "* Copyright (C) 2018  Alexander Kraus <nr4@z10.info>\n"
 "*\n"
@@ -138,12 +166,9 @@ const char *decayingfactory_source = "/* Endeavor by Team210 - 64k intro by Team
 "void dbox(in vec2 x, in vec2 b, out float d);\n"
 "void dbox3(in vec3 x, in vec3 b, out float d);\n"
 "void dvoronoi(in vec2 x, out float d, out vec2 ind);\n"
-"\n"
-"// Stroke\n"
-"void stroke(in float d0, in float s, out float d)\n"
-"{\n"
-"    d = abs(d0)-s;\n"
-"}\n"
+"void normal(in vec3 x, out vec3 n);\n"
+"void stroke(in float d0, in float s, out float d);\n"
+"void add(in vec2 sda, in vec2 sdb, out vec2 sdf);\n"
 "\n"
 "void colorize_wall_concrete(in vec2 x, out vec3 col)\n"
 "{\n"
@@ -305,11 +330,6 @@ const char *decayingfactory_source = "/* Endeavor by Team210 - 64k intro by Team
 "    n = normalize(n-s);\n"
 "}\n"
 "\n"
-"void add(in vec2 sda, in vec2 sdb, out vec2 sdf)\n"
-"{\n"
-"    sdf = mix(sda, sdb, step(sdb.x, sda.x));\n"
-"}\n"
-"\n"
 "void scene(in vec3 x, out vec2 sdf)\n"
 "{\n"
 "    float d;\n"
@@ -338,21 +358,6 @@ const char *decayingfactory_source = "/* Endeavor by Team210 - 64k intro by Team
 "    lfnoise(34.5*x.xz-3.141*iTime*c.yx-.1*iTime*c.xy, n2);\n"
 "    vec2 sdb = vec2(x.y+.38-.002*(.7*n+.3*n2),3.);\n"
 "    add(sdf, sdb, sdf);\n"
-"}\n"
-"\n"
-"void normal(in vec3 x, out vec3 n)\n"
-"{\n"
-"    const float dx = 5.e-4;\n"
-"    vec2 s, na;\n"
-"    \n"
-"    scene(x,s);\n"
-"    scene(x+dx*c.xyy, na);\n"
-"    n.x = na.x;\n"
-"    scene(x+dx*c.yxy, na);\n"
-"    n.y = na.x;\n"
-"    scene(x+dx*c.yyx, na);\n"
-"    n.z = na.x;\n"
-"    n = normalize(n-s.x);\n"
 "}\n"
 "\n"
 "void colorize(in vec3 x, in vec2 s, inout vec3 n, out vec3 col)\n"
@@ -548,6 +553,45 @@ void Loaddvoronoi()
 #endif
     progress += .2/(float)nsymbols;
 }
+void Loadnormal()
+{
+    int normal_size = strlen(normal_source);
+    normal_handle = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(normal_handle, 1, (GLchar **)&normal_source, &normal_size);
+    glCompileShader(normal_handle);
+#ifdef DEBUG
+    printf("---> normal Shader:\n");
+    debug(normal_handle);
+    printf(">>>>\n");
+#endif
+    progress += .2/(float)nsymbols;
+}
+void Loadstroke()
+{
+    int stroke_size = strlen(stroke_source);
+    stroke_handle = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(stroke_handle, 1, (GLchar **)&stroke_source, &stroke_size);
+    glCompileShader(stroke_handle);
+#ifdef DEBUG
+    printf("---> stroke Shader:\n");
+    debug(stroke_handle);
+    printf(">>>>\n");
+#endif
+    progress += .2/(float)nsymbols;
+}
+void Loadadd()
+{
+    int add_size = strlen(add_source);
+    add_handle = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(add_handle, 1, (GLchar **)&add_source, &add_size);
+    glCompileShader(add_handle);
+#ifdef DEBUG
+    printf("---> add Shader:\n");
+    debug(add_handle);
+    printf(">>>>\n");
+#endif
+    progress += .2/(float)nsymbols;
+}
 
 void LoadSymbols()
 {
@@ -562,6 +606,12 @@ void LoadSymbols()
     Loaddbox3();
     updateBar();
     Loaddvoronoi();
+    updateBar();
+    Loadnormal();
+    updateBar();
+    Loadstroke();
+    updateBar();
+    Loadadd();
     updateBar();
 }
 int decayingfactory_program, decayingfactory_handle;
@@ -587,6 +637,9 @@ void Loaddecayingfactory()
     glAttachShader(decayingfactory_program,dbox_handle);
     glAttachShader(decayingfactory_program,dbox3_handle);
     glAttachShader(decayingfactory_program,dvoronoi_handle);
+    glAttachShader(decayingfactory_program,normal_handle);
+    glAttachShader(decayingfactory_program,stroke_handle);
+    glAttachShader(decayingfactory_program,add_handle);
     glLinkProgram(decayingfactory_program);
 #ifdef DEBUG
     printf("---> decayingfactory Program:\n");
