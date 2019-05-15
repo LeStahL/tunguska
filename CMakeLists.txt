@@ -83,6 +83,11 @@ if(WIN32)
         COMMAND python pack.py
     )
     
+    add_custom_target(symbolization
+        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/gfx/
+        COMMAND python symbolize.py decayingfactory.frag -o symbols.h
+    )
+    
     add_definitions(/Gy /O1 /fp:fast /GR- /GS- /MT)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /ENTRY:demo /SUBSYSTEM:Windows  /OPT:REF  /OPT:ICF=10 /VERBOSE /NODEFAULTLIB") 
     add_executable(tunguska t.c)
@@ -92,6 +97,7 @@ if(WIN32)
     
     add_dependencies(tunguska minification)
     add_dependencies(tunguska texture_packing)
+    add_dependencies(tunguska symbolization)
     add_custom_command(TARGET tunguska COMMAND ${KKRUNCHY_K7} --best ${CMAKE_CURRENT_BINARY_DIR}/Release/tunguska.exe --out ${CMAKE_CURRENT_BINARY_DIR}/Release/tunguskac.exe POST_BUILD)
 endif()
 
