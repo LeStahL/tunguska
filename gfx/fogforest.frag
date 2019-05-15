@@ -37,6 +37,51 @@ void dbox(in vec2 p, in vec2 b, out float dst);
 void line(in vec3 x, in vec3 p1, in vec3 p2, out float dst);
 void stroke(in float d, in float s, out float dst);
 
+// Hash function
+void rand3(in vec3 x, out float num)
+{
+    num = fract(sin(dot(sign(x)*abs(x) ,vec3(12.9898,78.233,45.1232)))*43758.5453);
+}
+
+// Arbitrary-frequency 2D noise
+void lfnoise3(in vec3 t, out float num)
+{
+    vec3 i = floor(t);
+    t = fract(t);
+    //t = ((6.*t-15.)*t+10.)*t*t*t;  // TODO: add this for slower perlin noise
+    t = smoothstep(c.yyy, c.xxx, t); // TODO: add this for faster value noise
+    vec2 v1, v2, v3, v4;
+    rand3(i, v1.x);
+    rand3(i+c.xyy, v1.y);
+    rand3(i+c.yxy, v2.x);
+    rand3(i+c.xxy, v2.y);
+    rand3(i+c.yyx, v3.x);
+    rand3(i+c.xyx, v3.y);
+    rand3(i+c.yxx, v4.x);
+    rand3(i+c.xxx, v4.y);
+    v1 = c.zz+2.*mix(v1, v2, t.y);
+    v3 = c.zz+2.*mix(v3, v4, t.y);
+    v2.x = -1.+2.*mix(v1.x, v1.y, t.x);
+    v2.y = -1.+2.*mix(v3.x, v3.y, t.x);
+    num = mix(v2.x, v2.y, t.z);
+}
+
+// Make noise multi-frequency
+void mfnoise3(in vec3 x, in float fmin, in float fmax, in float alpha, out float dst)
+{
+    dst = 0.;
+    float a = 1., nf = 0.;
+    for(float f = fmin; f<fmax; f = f*2.)
+    {
+        float buf;
+        lfnoise3(f*x, buf);
+        dst += a*buf;
+        a *= alpha;
+        nf += 1.;
+    }
+    dst *= (1.-alpha)/(1.-pow(alpha, nf));
+}
+
 // Scene
 void scene(in vec3 x, out vec2 d)
 {
@@ -149,8 +194,13 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
             + .2*col*abs(dot(l,n))
             +.6*col*abs(pow(dot(reflect(-l,n),dir),3.));
     }
-    
-    col = mix(col, mix(vec3(0.91,0.87,0.68),vec3(0.07,0.21,0.21),clamp(length(uv),0.,1.)), clamp(d/10.,0.,1.));
+    vec3 c1 =  mix(vec3(0.91,0.87,0.68),vec3(0.07,0.21,0.21),clamp(length(uv),0.,1.));
+    float noiz;
+    mfnoise3(x,1.,100.,.65,noiz);
+    noiz = .5+.5*noiz;
+    //noiz *= smoothstep(.3,.5,clamp(x.z,0.,1.));
+    c1 = mix(c1, vec3(0.29,0.60,0.47), noiz);
+    col = mix(col, c1, clamp(d/10.,0.,1.));
     
     fragColor = clamp(vec4(col,1.0),0.,1.);
 }
