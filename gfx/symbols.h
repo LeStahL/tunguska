@@ -2,8 +2,8 @@
 #ifndef SYMBOLIZE_H
 #define SYMBOLIZE_H
 
-int rand_handle, lfnoise_handle, mfnoise_handle, dbox_handle, dbox3_handle, dvoronoi_handle, normal_handle, stroke_handle, add_handle;
-const int nsymbols = 9;
+int rand_handle, lfnoise_handle, mfnoise_handle, dbox_handle, dbox3_handle, dvoronoi_handle, normal_handle, stroke_handle, add_handle, smoothmin_handle, zextrude_handle, line_handle;
+const int nsymbols = 12;
 const char *rand_source = "#version 130\n\n"
 "void rand(in vec2 x, out float n)\n"
 "{\n"
@@ -130,6 +130,27 @@ const char *stroke_source = "// Stroke\n"
 const char *add_source = "void add(in vec2 sda, in vec2 sdb, out vec2 sdf)\n"
 "{\n"
 "    sdf = mix(sda, sdb, step(sdb.x, sda.x));\n"
+"}\n"
+"\0";
+const char *smoothmin_source = "// iq's smooth minimum\n"
+"void smoothmin(in float a, in float b, in float k, out float dst)\n"
+"{\n"
+"    float h = max( k-abs(a-b), 0.0 )/k;\n"
+"    dst = min( a, b ) - h*h*h*k*(1.0/6.0);\n"
+"}\n"
+"\0";
+const char *zextrude_source = "// Extrusion\n"
+"void zextrude(in float z, in float d2d, in float h, out float d)\n"
+"{\n"
+"    vec2 w = vec2(-d2d, abs(z)-0.5*h);\n"
+"    d = length(max(w,0.0));\n"
+"}\n"
+"\0";
+const char *line_source = "// Distance to line segment\n"
+"void line(in vec3 x, in vec3 p1, in vec3 p2, out float dst)\n"
+"{\n"
+"    vec3 d = p2-p1;\n"
+"    dst = length(x-mix(p1, p2, clamp(dot(x-p1, d)/dot(d,d),0.,1.)));\n"
 "}\n"
 "\0";
 const char *decayingfactory_source = "/* Endeavor by Team210 - 64k intro by Team210 at Revision 2k19\n"
@@ -475,6 +496,168 @@ const char *decayingfactory_source = "/* Endeavor by Team210 - 64k intro by Team
 "    mainImage(gl_FragColor, gl_FragCoord.xy);\n"
 "}\n"
 "\0";
+const char *fogforest_source = "/* Endeavor by Team210 - 64k intro by Team210 at Revision 2k19\n"
+" * Copyright (C) 2018  Alexander Kraus <nr4@z10.info>\n"
+" * \n"
+" * This program is free software: you can redistribute it and/or modify\n"
+" * it under the terms of the GNU General Public License as published by\n"
+" * the Free Software Foundation, either version 3 of the License, or\n"
+" * (at your option) any later version.\n"
+" * \n"
+" * This program is distributed in the hope that it will be useful,\n"
+" * but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
+" * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
+" * GNU General Public License for more details.\n"
+" * \n"
+" * You should have received a copy of the GNU General Public License\n"
+" * along with this program.  If not, see <http://www.gnu.org/licenses/>.\n"
+" */\n"
+"\n"
+"#version 130\n\n"
+"\n"
+"uniform float iTime;\n"
+"uniform vec2 iResolution;\n"
+"\n"
+"// Global constants\n"
+"const float pi = acos(-1.);\n"
+"const vec3 c = vec3(1.0, 0.0, -1.0);\n"
+"float a = 1.0;\n"
+"\n"
+"// Hash function\n"
+"void rand(in vec2 x, out float num);\n"
+"void lfnoise(in vec2 t, out float n);\n"
+"void mfnoise(in vec2 x, in float d, in float b, in float e, out float n);\n"
+"void dvoronoi(in vec2 x, out float d, out vec2 z);\n"
+"void smoothmin(in float a, in float b, in float k, out float dst);\n"
+"void add(in vec2 sda, in vec2 sdb, out vec2 sdf);\n"
+"void zextrude(in float z, in float d2d, in float h, out float d);\n"
+"void dbox(in vec2 p, in vec2 b, out float dst);\n"
+"void line(in vec3 x, in vec3 p1, in vec3 p2, out float dst);\n"
+"void stroke(in float d, in float s, out float dst);\n"
+"\n"
+"// Scene\n"
+"void scene(in vec3 x, out vec2 d)\n"
+"{\n"
+"  x.y += .1*iTime;\n"
+"  float n;\n"
+"  \n"
+"  // Floor\n"
+"  mfnoise(x.xy, 4.,4.e2,.35, n);\n"
+"  d = vec2(x.z-.05*n,1.);\n"
+"  \n"
+"  // Trees\n"
+"  float v, da;\n"
+"  vec2 vi;\n"
+"  dvoronoi(x.xy, v, vi);\n"
+"  vec2 r;\n"
+"  rand(vi, r.x);\n"
+"  rand(vi+1301., r.y);\n"
+"  vec2 y = x.xy-vi, \n"
+"    n2;\n"
+"  lfnoise(3.*x.z*c.xx-r,n2.x);\n"
+"  lfnoise(4.*x.z*c.xx+33.1*r, n2.y);\n"
+"  da = length(y-.01*n2)-.07*mix(1.,.7,smoothstep(0., 1.,clamp(x.z*3.,0.,1.)));\n"
+"  //zextrude(x.z,-da,10.,da);\n"
+"  //add(d, vec2(da,2.), d);\n"
+"  smoothmin(d.x,da,.2,d.x);\n"
+"  d.y = mix(1.,2.,step(.1*n,x.z));\n"
+"  \n"
+"  // smaller branches\n"
+"  float z = mod(x.z,.05)-.025, zi = (x.z-z)/.05;\n"
+"  vec2 rp;//= vec2(0;\n"
+"  rand(zi*c.xx+r,rp.x);\n"
+"  rand(zi*c.xx+r+1332.,rp.y);\n"
+"  rp *= vec2(1.,2.*pi);\n"
+"\n"
+"  float nz;\n"
+"  lfnoise(5.*length(y-.01*n2)*c.xx, nz);\n"
+"  \n"
+"\n"
+"  line(vec3(y-.01*n2, z+.01*nz), c.yyy, vec3(rp.x*vec2(cos(rp.y),sin(rp.y)),.05*rp.x), da);\n"
+"  stroke(da, mix(1.,.1,smoothstep(0.,1.,clamp(length(vec3(y-.01*n2, z))/.7,0.,1.)))*.01*(.3+rp.x+n2.x), da);\n"
+"  smoothmin(d.x,da,.05,d.x);\n"
+"}\n"
+"\n"
+"// Normal\n"
+"const float dx = 5.e-4;\n"
+"void normal(in vec3 x, out vec3 n);\n"
+"\n"
+"// Texture\n"
+"void colorize(in vec2 x, out vec3 col)\n"
+"{\n"
+"  x.y += .1*iTime;\n"
+"  float n;\n"
+"    mfnoise(x.xy, 4.e0,4.e2,.65, n);\n"
+"  col = mix(vec3(0.55,0.69,0.37), vec3(0.00,0.02,0.04), .9+.1*n);\n"
+"}\n"
+"\n"
+"void mainImage( out vec4 fragColor, in vec2 fragCoord )\n"
+"{\n"
+"     // Set up coordinates\n"
+"    a = iResolution.x/iResolution.y;\n"
+"    vec2 uv = fragCoord/iResolution.yy-0.5*vec2(a, 1.0);\n"
+"    vec3 col = c.yyy;\n"
+"    \n"
+"    // Camera setup\n"
+"    float pp = .3*iTime;\n"
+"    vec3 o = c.yzy+.2*c.yyx, \n"
+"        t = c.yyy+.3*c.yyx,\n"
+"        dir = normalize(t-o),\n"
+"        r = normalize(c.xyy),\n"
+"        u = normalize(cross(r,dir)),\n"
+"        n,\n"
+"        x;\n"
+"    t += uv.x*r + uv.y*u;\n"
+"    dir = normalize(t-o);\n"
+"    vec2 s;\n"
+"    float d = 0.;//-(o.z-.05)/dir.z;\n"
+"    int N = 350,\n"
+"        i;\n"
+"    \n"
+"    // Raymarching\n"
+"    for(i=0; i<N; ++i)\n"
+"    {\n"
+"        x = o + d * dir;\n"
+"        scene(x,s);\n"
+"        if(s.x < 1.e-4*max(d*d,1.)) break;\n"
+"        if(d>10.)break;\n"
+"        d += min(.01*max(d,1.),s.x);\n"
+"    }\n"
+"    \n"
+"    // Illumination\n"
+"    vec3 l = normalize(x+c.yxx);\n"
+"    if(i<N)\n"
+"    {\n"
+"	    normal(x,n);\n"
+"        //colorize(x.xy, col);\n"
+"    }\n"
+"\n"
+"    \n"
+"    if(s.y == 2.)//Treess\n"
+"    {\n"
+"      \n"
+"    col = .2*vec3(0.05,0.12,0.12)\n"
+"            + .2*vec3(0.05,0.12,0.12)*abs(dot(l,n))\n"
+"           +.6*vec3(0.04,0.13,0.12)*abs(pow(dot(reflect(-l,n),dir),3.));\n"
+"    }\n"
+"    if(s.y == 1.)\n"
+"    {\n"
+"      colorize(x.xy,col);\n"
+"      .5*col\n"
+"            + .2*col*abs(dot(l,n))\n"
+"           +.6*col*abs(pow(dot(reflect(-l,n),dir),3.));\n"
+"    }\n"
+"    \n"
+"    col = mix(col, mix(vec3(0.91,0.87,0.68),vec3(0.07,0.21,0.21),clamp(length(uv),0.,1.)), clamp(d/10.,0.,1.));\n"
+"    \n"
+"    fragColor = clamp(vec4(col,1.0),0.,1.);\n"
+"}\n"
+"\n"
+"void main()\n"
+"{\n"
+"    mainImage(gl_FragColor, gl_FragCoord.xy);\n"
+"}\n"
+"\0";
 void Loadrand()
 {
     int rand_size = strlen(rand_source);
@@ -592,6 +775,45 @@ void Loadadd()
 #endif
     progress += .2/(float)nsymbols;
 }
+void Loadsmoothmin()
+{
+    int smoothmin_size = strlen(smoothmin_source);
+    smoothmin_handle = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(smoothmin_handle, 1, (GLchar **)&smoothmin_source, &smoothmin_size);
+    glCompileShader(smoothmin_handle);
+#ifdef DEBUG
+    printf("---> smoothmin Shader:\n");
+    debug(smoothmin_handle);
+    printf(">>>>\n");
+#endif
+    progress += .2/(float)nsymbols;
+}
+void Loadzextrude()
+{
+    int zextrude_size = strlen(zextrude_source);
+    zextrude_handle = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(zextrude_handle, 1, (GLchar **)&zextrude_source, &zextrude_size);
+    glCompileShader(zextrude_handle);
+#ifdef DEBUG
+    printf("---> zextrude Shader:\n");
+    debug(zextrude_handle);
+    printf(">>>>\n");
+#endif
+    progress += .2/(float)nsymbols;
+}
+void Loadline()
+{
+    int line_size = strlen(line_source);
+    line_handle = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(line_handle, 1, (GLchar **)&line_source, &line_size);
+    glCompileShader(line_handle);
+#ifdef DEBUG
+    printf("---> line Shader:\n");
+    debug(line_handle);
+    printf(">>>>\n");
+#endif
+    progress += .2/(float)nsymbols;
+}
 
 void LoadSymbols()
 {
@@ -613,10 +835,19 @@ void LoadSymbols()
     updateBar();
     Loadadd();
     updateBar();
+    Loadsmoothmin();
+    updateBar();
+    Loadzextrude();
+    updateBar();
+    Loadline();
+    updateBar();
 }
-int decayingfactory_program, decayingfactory_handle;
-int decayingfactory_iTime_location,decayingfactory_iResolution_location;
-const int nprograms = 1;
+int decayingfactory_program, decayingfactory_handle, fogforest_program, fogforest_handle;
+int decayingfactory_iTime_location;
+decayingfactory_iResolution_location;
+int fogforest_iTime_location;
+fogforest_iResolution_location;
+const int nprograms = 2;
 
 void Loaddecayingfactory()
 {
@@ -652,9 +883,47 @@ void Loaddecayingfactory()
     progress += .2/(float)nprograms;
 }
 
+void Loadfogforest()
+{
+    int fogforest_size = strlen(fogforest_source);
+    fogforest_handle = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fogforest_handle, 1, (GLchar **)&fogforest_source, &fogforest_size);
+    glCompileShader(fogforest_handle);
+#ifdef DEBUG
+    printf("---> fogforest Shader:\n");
+    debug(fogforest_handle);
+    printf(">>>>\n");
+#endif
+    fogforest_program = glCreateProgram();
+    glAttachShader(fogforest_program,fogforest_handle);
+    glAttachShader(fogforest_program,rand_handle);
+    glAttachShader(fogforest_program,lfnoise_handle);
+    glAttachShader(fogforest_program,mfnoise_handle);
+    glAttachShader(fogforest_program,dvoronoi_handle);
+    glAttachShader(fogforest_program,smoothmin_handle);
+    glAttachShader(fogforest_program,add_handle);
+    glAttachShader(fogforest_program,zextrude_handle);
+    glAttachShader(fogforest_program,dbox_handle);
+    glAttachShader(fogforest_program,line_handle);
+    glAttachShader(fogforest_program,stroke_handle);
+    glAttachShader(fogforest_program,normal_handle);
+    glLinkProgram(fogforest_program);
+#ifdef DEBUG
+    printf("---> fogforest Program:\n");
+    debugp(fogforest_program);
+    printf(">>>>\n");
+#endif
+    glUseProgram(fogforest_program);
+    fogforest_iTime_location = glGetUniformLocation(fogforest_program, "iTime");
+    fogforest_iResolution_location = glGetUniformLocation(fogforest_program, "iResolution");
+    progress += .2/(float)nprograms;
+}
+
 void LoadPrograms()
 {
     Loaddecayingfactory();
+    updateBar();
+    Loadfogforest();
     updateBar();
 }
 #endif

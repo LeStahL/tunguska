@@ -85,7 +85,7 @@ if(WIN32)
     
     add_custom_target(symbolization
         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/gfx/
-        COMMAND python symbolize.py decayingfactory.frag -o symbols.h
+        COMMAND python symbolize.py decayingfactory.frag fogforest.frag -o symbols.h
     )
     
     add_definitions(/Gy /O1 /fp:fast /GR- /GS- /MT)
