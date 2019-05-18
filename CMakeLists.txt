@@ -92,16 +92,20 @@ if(WIN32)
         COMMAND "${Python3_EXECUTABLE}" symbolize.py decayingfactory.frag fogforest.frag -o symbols.h
     )
     
-    add_definitions(/Gy /O1 /fp:fast /GR- /GS- /MT)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /ENTRY:demo /SUBSYSTEM:Windows  /OPT:REF  /OPT:ICF=10 /VERBOSE /NODEFAULTLIB") 
     add_executable(tunguska t.c)
+    target_compile_options(tunguska PRIVATE /Gy /O1 /fp:fast /GR- /GS- /MT)
     
-    # for debug output: User32.lib ucrt.lib msvcrt.lib
-    target_link_libraries(tunguska opengl32.lib Winmm.lib User32.lib ucrt.lib msvcrt.lib)
+	if (MSVC_VERSION GREATER_EQUAL 1910) # VS2017
+      target_link_libraries(tunguska opengl32.lib Winmm.lib User32.lib ucrt.lib msvcrt.lib vcruntime.lib ucrt.lib)
+	else()
+      # for debug output: User32.lib ucrt.lib msvcrt.lib
+	  target_link_libraries(tunguska opengl32.lib Winmm.lib User32.lib ucrt.lib msvcrt.lib)
+	endif()
     
     add_dependencies(tunguska minification)
     add_dependencies(tunguska texture_packing)
     add_dependencies(tunguska symbolization)
-    add_custom_command(TARGET tunguska COMMAND ${KKRUNCHY_K7} --best ${CMAKE_CURRENT_BINARY_DIR}/Release/tunguska.exe --out ${CMAKE_CURRENT_BINARY_DIR}/Release/tunguskac.exe POST_BUILD)
+    add_custom_command(TARGET tunguska COMMAND "${KKRUNCHY_K7}" --best "$<TARGET_FILE:tunguska>" --out "$<TARGET_FILE_DIR:tunguska>/tunguskac.exe" POST_BUILD)
 endif()
 
