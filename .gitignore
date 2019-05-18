@@ -3,6 +3,7 @@ build
 *.kate-swp
 *.kate_swp
 *__pycache__
+.vs
 
 
 # Prerequisites
