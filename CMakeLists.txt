@@ -20,6 +20,10 @@ project(tunguska)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CTRL_ALT_TEST_MINIFIER OFF)
 
+# Find the right python interpreter version
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
+
+
 if(WIN32)
     find_program(KKRUNCHY_K7 kkrunchy_k7.exe HINTS ${PROJECT_BINARY_DIR})
     
@@ -60,32 +64,32 @@ if(WIN32)
 #             COMMAND del "\"${PROJECT_SOURCE_DIR}/gfx/hangout.h\""
 #             COMMAND del "\"${PROJECT_SOURCE_DIR}/gfx/fourtwenty.h\""
 #             COMMAND python shader-compressor.py "${PROJECT_SOURCE_DIR}/gfx.frag" -o "${PROJECT_SOURCE_DIR}/gfx.h"  --no-minification 
-            COMMAND python shader-compressor.py  -o "${PROJECT_SOURCE_DIR}/sfx.h" "${PROJECT_SOURCE_DIR}/sfx.frag" --no-minification
-            COMMAND python shader-compressor.py -o "${PROJECT_SOURCE_DIR}/gfx/load.h" "${PROJECT_SOURCE_DIR}/gfx/load.frag" --no-minification
-            COMMAND python shader-compressor.py -o "${PROJECT_SOURCE_DIR}/gfx/post.h" "${PROJECT_SOURCE_DIR}/gfx/post.frag" --no-minification
-            COMMAND python shader-compressor.py -o "${PROJECT_SOURCE_DIR}/gfx/logo210.h" "${PROJECT_SOURCE_DIR}/gfx/logo210.frag" --no-minification
-            COMMAND python shader-compressor.py -o "${PROJECT_SOURCE_DIR}/gfx/decayingfactory.h" "${PROJECT_SOURCE_DIR}/gfx/decayingfactory.frag" --no-minification
-            COMMAND python shader-compressor.py -o "${PROJECT_SOURCE_DIR}/gfx/text.h" "${PROJECT_SOURCE_DIR}/gfx/text.frag" --no-minification
-#             COMMAND python shader-compressor.py -o "${PROJECT_SOURCE_DIR}/gfx/logosmall.h" "${PROJECT_SOURCE_DIR}/gfx/logosmall.frag" --no-minification
-#             COMMAND python shader-compressor.py -o "${PROJECT_SOURCE_DIR}/gfx/nr4.h" "${PROJECT_SOURCE_DIR}/gfx/nr4.frag" --no-minification
-#             COMMAND python shader-compressor.py -o "${PROJECT_SOURCE_DIR}/gfx/qm.h" "${PROJECT_SOURCE_DIR}/gfx/qm.frag" --no-minification
-#             COMMAND python shader-compressor.py -o "${PROJECT_SOURCE_DIR}/gfx/trip.h" "${PROJECT_SOURCE_DIR}/gfx/trip.frag" --no-minification
-#             COMMAND python shader-compressor.py -o "${PROJECT_SOURCE_DIR}/gfx/surface.h" "${PROJECT_SOURCE_DIR}/gfx/surface.frag" --no-minification
-#             COMMAND python shader-compressor.py -o "${PROJECT_SOURCE_DIR}/gfx/hangout.h" "${PROJECT_SOURCE_DIR}/gfx/hangout.frag" --no-minification
-#             COMMAND python shader-compressor.py -o "${PROJECT_SOURCE_DIR}/gfx/fourtwenty.h" "${PROJECT_SOURCE_DIR}/gfx/fourtwenty.frag" --no-minification
-#             COMMAND python shader-compressor.py -o "${PROJECT_SOURCE_DIR}/gfx/solskogen.h" "${PROJECT_SOURCE_DIR}/gfx/solskogen.frag" --no-minification
+            COMMAND "${Python3_EXECUTABLE}" shader-compressor.py  -o "${PROJECT_SOURCE_DIR}/sfx.h" "${PROJECT_SOURCE_DIR}/sfx.frag" --no-minification
+            COMMAND "${Python3_EXECUTABLE}" shader-compressor.py -o "${PROJECT_SOURCE_DIR}/gfx/load.h" "${PROJECT_SOURCE_DIR}/gfx/load.frag" --no-minification
+            COMMAND "${Python3_EXECUTABLE}" shader-compressor.py -o "${PROJECT_SOURCE_DIR}/gfx/post.h" "${PROJECT_SOURCE_DIR}/gfx/post.frag" --no-minification
+            COMMAND "${Python3_EXECUTABLE}" shader-compressor.py -o "${PROJECT_SOURCE_DIR}/gfx/logo210.h" "${PROJECT_SOURCE_DIR}/gfx/logo210.frag" --no-minification
+            COMMAND "${Python3_EXECUTABLE}" shader-compressor.py -o "${PROJECT_SOURCE_DIR}/gfx/decayingfactory.h" "${PROJECT_SOURCE_DIR}/gfx/decayingfactory.frag" --no-minification
+            COMMAND "${Python3_EXECUTABLE}" shader-compressor.py -o "${PROJECT_SOURCE_DIR}/gfx/text.h" "${PROJECT_SOURCE_DIR}/gfx/text.frag" --no-minification
+#             COMMAND "${Python3_EXECUTABLE}" shader-compressor.py -o "${PROJECT_SOURCE_DIR}/gfx/logosmall.h" "${PROJECT_SOURCE_DIR}/gfx/logosmall.frag" --no-minification
+#             COMMAND "${Python3_EXECUTABLE}" shader-compressor.py -o "${PROJECT_SOURCE_DIR}/gfx/nr4.h" "${PROJECT_SOURCE_DIR}/gfx/nr4.frag" --no-minification
+#             COMMAND "${Python3_EXECUTABLE}" shader-compressor.py -o "${PROJECT_SOURCE_DIR}/gfx/qm.h" "${PROJECT_SOURCE_DIR}/gfx/qm.frag" --no-minification
+#             COMMAND "${Python3_EXECUTABLE}" shader-compressor.py -o "${PROJECT_SOURCE_DIR}/gfx/trip.h" "${PROJECT_SOURCE_DIR}/gfx/trip.frag" --no-minification
+#             COMMAND "${Python3_EXECUTABLE}" shader-compressor.py -o "${PROJECT_SOURCE_DIR}/gfx/surface.h" "${PROJECT_SOURCE_DIR}/gfx/surface.frag" --no-minification
+#             COMMAND "${Python3_EXECUTABLE}" shader-compressor.py -o "${PROJECT_SOURCE_DIR}/gfx/hangout.h" "${PROJECT_SOURCE_DIR}/gfx/hangout.frag" --no-minification
+#             COMMAND "${Python3_EXECUTABLE}" shader-compressor.py -o "${PROJECT_SOURCE_DIR}/gfx/fourtwenty.h" "${PROJECT_SOURCE_DIR}/gfx/fourtwenty.frag" --no-minification
+#             COMMAND "${Python3_EXECUTABLE}" shader-compressor.py -o "${PROJECT_SOURCE_DIR}/gfx/solskogen.h" "${PROJECT_SOURCE_DIR}/gfx/solskogen.frag" --no-minification
         )
     endif()
     
     add_custom_target(texture_packing
         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/font/
 #         COMMAND del "\"${PROJECT_SOURCE_DIR}/font/font.h\""
-        COMMAND python pack.py
+        COMMAND "${Python3_EXECUTABLE}" pack.py
     )
     
     add_custom_target(symbolization
         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/gfx/
-        COMMAND python symbolize.py decayingfactory.frag fogforest.frag -o symbols.h
+        COMMAND "${Python3_EXECUTABLE}" symbolize.py decayingfactory.frag fogforest.frag -o symbols.h
     )
     
     add_definitions(/Gy /O1 /fp:fast /GR- /GS- /MT)
