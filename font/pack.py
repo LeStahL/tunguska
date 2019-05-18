@@ -54,7 +54,7 @@ for i in range(len(strings)):
     strings[i] = strings[i].lower().strip()
     
 # Get the list of unique contained ordinals
-ordinals = list(set(''.join(strings).replace('\n', '')))
+ordinals = sorted(list(set(''.join(strings).replace('\n', ''))))
 nglyphs = len(ordinals)
 print("Packing glyph data of: ", ordinals)
 
