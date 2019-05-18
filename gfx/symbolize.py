@@ -168,6 +168,6 @@ header_source += "#endif\n"
 if args.out == None:
     print(header_source)
 else:
-    with open(args.out, "wt") as f:
+    with open(args.out, "wt", newline='\n') as f:
         f.write(header_source)
         f.close()

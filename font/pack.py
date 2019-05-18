@@ -45,7 +45,7 @@ import font
 
 # Read string database
 strings = None
-with open('strings.txt', 'rt') as f:
+with open('strings.txt', 'rt', newline='\n') as f:
     strings = f.readlines()
     f.close()
 
@@ -166,7 +166,7 @@ text += "const int font_texture_size = " + str(texs) + ";"
 text += '\n#endif\n'
 
 # Write to file
-with open("font.h", "wt") as f:
+with open("font.h", "wt", newline='\n') as f:
     f.write(text)
     f.close()
 
