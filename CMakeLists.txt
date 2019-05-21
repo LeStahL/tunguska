@@ -25,7 +25,7 @@ find_package(Python3 REQUIRED COMPONENTS Interpreter)
 
 
 if(WIN32)
-    find_program(KKRUNCHY_K7 kkrunchy_k7.exe HINTS ${PROJECT_BINARY_DIR})
+    find_program(KKRUNCHY_K7 kkrunchy_k7.exe HINTS "${PROJECT_BINARY_DIR}" "${PROJECT_SOURCE_DIR}")
     
     if(${CTRL_ALT_TEST_MINIFIER})
         find_program(MINIFIER shader_minifier.exe HINTS ${PROJECT_BINARY_DIR})
