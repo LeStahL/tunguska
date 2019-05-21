@@ -4,6 +4,7 @@ build
 *.kate_swp
 *__pycache__
 .vs
+/CMakeSettings.json
 
 # Prerequisites
 *.d
