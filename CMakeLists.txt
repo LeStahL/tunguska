@@ -76,10 +76,10 @@ add_custom_target(symbolization
 )
 
 if(MSVC)
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /ENTRY:demo /SUBSYSTEM:Windows  /OPT:REF  /OPT:ICF=10 /VERBOSE /NODEFAULTLIB") 
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /ENTRY:demo /SUBSYSTEM:Windows  /OPT:REF  /OPT:ICF=10 /VERBOSE /NODEFAULTLIB")
 endif()
 
-add_executable(tunguska t.c)
+add_executable(tunguska t.c common.h sequence.h sfx.h pal_win32.h pal_linux.h gfx/logo210.h gfx/decayingfactory.h font/font.h gfx/text.h gfx/symbols.h gfx/load.h gfx/post.h)
 add_dependencies(tunguska minification)
 add_dependencies(tunguska texture_packing)
 add_dependencies(tunguska symbolization)
@@ -100,4 +100,8 @@ if(MSVC)
 
     find_program(KKRUNCHY_K7 kkrunchy_k7.exe HINTS "${PROJECT_BINARY_DIR}" "${PROJECT_SOURCE_DIR}")
     add_custom_command(TARGET tunguska COMMAND "${KKRUNCHY_K7}" --best "$<TARGET_FILE:tunguska>" --out "$<TARGET_FILE_DIR:tunguska>/tunguskac.exe" POST_BUILD)
+else()
+    find_package(SDL2 REQUIRED)
+    target_include_directories(tunguska SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS})
+    target_link_libraries(tunguska ${SDL2_LIBRARIES})
 endif()
