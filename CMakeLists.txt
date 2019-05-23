@@ -22,6 +22,7 @@ set(CTRL_ALT_TEST_MINIFIER OFF)
 
 # Find the right python interpreter version
 find_package(Python3 REQUIRED COMPONENTS Interpreter)
+find_package(OpenGL REQUIRED COMPONENTS OpenGL)
 
 if(MSVC AND ${CTRL_ALT_TEST_MINIFIER})
     find_program(MINIFIER shader_minifier.exe HINTS ${PROJECT_BINARY_DIR})
@@ -83,14 +84,18 @@ add_dependencies(tunguska minification)
 add_dependencies(tunguska texture_packing)
 add_dependencies(tunguska symbolization)
 
+target_include_directories(tunguska SYSTEM PRIVATE "${OPENGL_INCLUDE_DIR}")
+
+target_link_libraries(tunguska OpenGL::GL)
+
 if(MSVC)
     target_compile_options(tunguska PRIVATE /Gy /O1 /fp:fast /GR- /GS- /MT)
 
     if (MSVC_VERSION GREATER_EQUAL 1910) # VS2017
-        target_link_libraries(tunguska opengl32.lib Winmm.lib User32.lib ucrt.lib msvcrt.lib vcruntime.lib ucrt.lib)
+        target_link_libraries(tunguska Winmm.lib User32.lib ucrt.lib msvcrt.lib vcruntime.lib ucrt.lib)
     else()
         # for debug output: User32.lib ucrt.lib msvcrt.lib
-        target_link_libraries(tunguska opengl32.lib Winmm.lib User32.lib ucrt.lib msvcrt.lib)
+        target_link_libraries(tunguska Winmm.lib User32.lib ucrt.lib msvcrt.lib)
     endif()
 
     find_program(KKRUNCHY_K7 kkrunchy_k7.exe HINTS "${PROJECT_BINARY_DIR}" "${PROJECT_SOURCE_DIR}")
