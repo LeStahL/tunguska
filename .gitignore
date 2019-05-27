@@ -3,7 +3,8 @@ build
 *.kate-swp
 *.kate_swp
 *__pycache__
-
+.vs
+/CMakeSettings.json
 
 # Prerequisites
 *.d
@@ -13,6 +14,7 @@ build
 *.ko
 *.obj
 *.elf
+*.pyc
 
 # Linker output
 *.ilk

@@ -101,7 +101,7 @@ if print_stdout:
     print(output)
 elif write_c_header:
     print(args.out)
-    with open(args.out, 'wt') as f:
+    with open(args.out, 'wt', newline='\n') as f:
         f.write(output)
         f.close()
         
