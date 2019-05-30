@@ -112,7 +112,6 @@ int w = 1920, h = 1080;
 int
 // SFX
 sfx_program,
-sfx_handle,
 sfx_blockoffset_location,
 sfx_samplerate_location,
 sfx_volumelocation,
@@ -124,14 +123,12 @@ sfx_sequence_width_location,
 sequence_texture_handle,
 
 // Loading bar
-load_handle,
 load_program,
 load_resolution_location,
 load_time_location,
 load_progress_location,
 
 // Post processing
-post_handle,
 post_program,
 post_resolution_location,
 post_fsaa_location,
@@ -145,13 +142,11 @@ txaa = 1,
 logo210_time_location,
 logo210_resolution_location,
 logo210_program,
-logo210_handle,
 
 // Decaying factory
 //     decayingfactory_time_location, 
 //     decayingfactory_resolution_location,
 //     decayingfactory_program, 
-//     decayingfactory_handle,
 
 	// Text
 	text_time_location,
@@ -160,8 +155,7 @@ logo210_handle,
 	text_channel0_location,
 	text_font_location,
 	font_texture_handle,
-	text_program,
-	text_handle;
+	text_program;
 
 // Demo globals
 #define duration 188.

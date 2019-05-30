@@ -23,22 +23,30 @@ int _fltused = 0;
 #include "common.h"
 
 
+int load_fragment_shader(const char* const shader)
+{
+	int size = strlen(shader);
+	int handle = glCreateShader(GL_FRAGMENT_SHADER);
+	int program = glCreateProgram();
+
+	glShaderSource(handle, 1, (GLchar **)&shader, &size);
+	glCompileShader(handle);
+	printf("---> Load shader:\n");
+	debug(handle);
+	glAttachShader(program, handle);
+	glLinkProgram(program);
+	printf("---> Load Program:\n");
+	debugp(program);
+	glUseProgram(program);
+
+	return program;
+}
+
 void load_demo()
 {
 	// Load loading bar shader
 	printf("++++ Creating Loading bar.\n");
-	int load_size = strlen(load_frag);
-	load_handle = glCreateShader(GL_FRAGMENT_SHADER);
-	load_program = glCreateProgram();
-	glShaderSource(load_handle, 1, (GLchar **)&load_frag, &load_size);
-	glCompileShader(load_handle);
-	printf("---> Load shader:\n");
-	debug(load_handle);
-	glAttachShader(load_program, load_handle);
-	glLinkProgram(load_program);
-	printf("---> Load Program:\n");
-	debugp(load_program);
-	glUseProgram(load_program);
+	load_program = load_fragment_shader(load_frag);
 	load_progress_location = glGetUniformLocation(load_program, LOAD_VAR_IPROGRESS);
 	load_time_location = glGetUniformLocation(load_program, LOAD_VAR_ITIME);
 	load_resolution_location = glGetUniformLocation(load_program, LOAD_VAR_IRESOLUTION);
@@ -46,18 +54,7 @@ void load_demo()
 
 	// Load post processing shader
 	printf("++++ Creating Post Shader.\n");
-	int post_size = strlen(post_frag);
-	post_handle = glCreateShader(GL_FRAGMENT_SHADER);
-	post_program = glCreateProgram();
-	glShaderSource(post_handle, 1, (GLchar **)&post_frag, &post_size);
-	glCompileShader(post_handle);
-	printf("---> Post shader:\n");
-	debug(post_handle);
-	glAttachShader(post_program, post_handle);
-	glLinkProgram(post_program);
-	printf("---> Post Program:\n");
-	debugp(post_program);
-	glUseProgram(post_program);
+	post_program = load_fragment_shader(post_frag);
 	post_channel0_location = glGetUniformLocation(post_program, POST_VAR_ICHANNEL0);
 	post_fsaa_location = glGetUniformLocation(post_program, POST_VAR_IFSAA);
 	post_resolution_location = glGetUniformLocation(post_program, POST_VAR_IRESOLUTION);
@@ -172,18 +169,7 @@ void load_demo()
 
 unsigned long __stdcall LoadMusicThread( void *lpParam)
 {
-    int sfx_size = strlen(sfx_frag);
-    sfx_handle = glCreateShader(GL_FRAGMENT_SHADER);
-    sfx_program = glCreateProgram();
-    glShaderSource(sfx_handle, 1, (GLchar **)&sfx_frag, &sfx_size);
-    glCompileShader(sfx_handle);
-    printf("---> SFX shader:\n");
-    debug(sfx_handle);
-    glAttachShader(sfx_program, sfx_handle);
-    glLinkProgram(sfx_program);
-    printf("---> SFX program:\n");
-    debugp(sfx_program);
-    glUseProgram(sfx_program);
+    sfx_program = load_fragment_shader(sfx_frag);
     sfx_samplerate_location = glGetUniformLocation(sfx_program, SFX_VAR_ISAMPLERATE);
     sfx_blockoffset_location = glGetUniformLocation(sfx_program, SFX_VAR_IBLOCKOFFSET);
     sfx_volumelocation = glGetUniformLocation(sfx_program, SFX_VAR_IVOLUME);
@@ -200,18 +186,7 @@ unsigned long __stdcall LoadMusicThread( void *lpParam)
 
 unsigned long __stdcall LoadLogo210Thread( void * lpParam)
 {
-    int logo210_size = strlen(logo210_frag);
-    logo210_handle = glCreateShader(GL_FRAGMENT_SHADER);
-    logo210_program = glCreateProgram();
-    glShaderSource(logo210_handle, 1, (GLchar **)&logo210_frag, &logo210_size);
-    glCompileShader(logo210_handle);
-    printf("---> Logo 210 shader:\n");
-    debug(logo210_handle);
-    glAttachShader(logo210_program, logo210_handle);
-    glLinkProgram(logo210_program);
-    printf("---> Logo 210 program:\n");
-    debugp(logo210_program);
-    glUseProgram(logo210_program);
+    logo210_program = load_fragment_shader(logo210_frag);
     logo210_time_location =  glGetUniformLocation(logo210_program, LOGO210_VAR_ITIME);
     logo210_resolution_location = glGetUniformLocation(logo210_program, LOGO210_VAR_IRESOLUTION);
     printf("++++ Logo 210 shader created.\n");
@@ -223,18 +198,7 @@ unsigned long __stdcall LoadLogo210Thread( void * lpParam)
 
 // unsigned long __stdcall LoadDecayingfactoryThread( void * lpParam)
 // {
-//     int decayingfactory_size = strlen(decayingfactory_frag);
-//     decayingfactory_handle = glCreateShader(GL_FRAGMENT_SHADER);
-//     decayingfactory_program = glCreateProgram();
-//     glShaderSource(decayingfactory_handle, 1, (GLchar **)&decayingfactory_frag, &decayingfactory_size);
-//     glCompileShader(decayingfactory_handle);
-//     printf("---> Decaying factory shader:\n");
-//     debug(decayingfactory_handle);
-//     glAttachShader(decayingfactory_program, decayingfactory_handle);
-//     glLinkProgram(decayingfactory_program);
-//     printf("---> Decaying factory program:\n");
-//     debugp(decayingfactory_program);
-//     glUseProgram(decayingfactory_program);
+//     decayingfactory_program = load_fragment_shader(decayingfactory_frag);
 //     decayingfactory_time_location =  glGetUniformLocation(decayingfactory_program, DECAYINGFACTORY_VAR_ITIME);
 //     decayingfactory_resolution_location = glGetUniformLocation(decayingfactory_program, DECAYINGFACTORY_VAR_IRESOLUTION);
 //     printf("++++ Decaying factory shader created.\n");
@@ -246,18 +210,7 @@ unsigned long __stdcall LoadLogo210Thread( void * lpParam)
 
 unsigned long __stdcall LoadTextThread(void * lpParam)
 {
-    int text_size = strlen(text_frag);
-    text_handle = glCreateShader(GL_FRAGMENT_SHADER);
-    text_program = glCreateProgram();
-    glShaderSource(text_handle, 1, (GLchar **)&text_frag, &text_size);
-    glCompileShader(text_handle);
-    printf("---> Text shader:\n");
-    debug(text_handle);
-    glAttachShader(text_program, text_handle);
-    glLinkProgram(text_program);
-    printf("---> Text program:\n");
-    debugp(text_program);
-    glUseProgram(text_program);
+    text_program = load_fragment_shader(text_frag);
     text_time_location =  glGetUniformLocation(text_program, TEXT_VAR_ITIME);
     text_resolution_location = glGetUniformLocation(text_program, TEXT_VAR_IRESOLUTION);
     text_font_location= glGetUniformLocation(text_program, TEXT_VAR_IFONT);
