@@ -201,9 +201,9 @@ int WINAPI demo(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, in
 	HWND hResolutionComboBox = CreateWindow(WC_COMBOBOX, "", CBS_DROPDOWN | CBS_HASSTRINGS | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE, 100, 10, 175, 80, lwnd, (HMENU)5, hInstance, NULL);
 
 	// Add items to resolution combo box and select full HD
-	const char *fullhd = "1920*1080",
-		*halfhd = "960*540",
-		*normal = "1024*768";
+	const char *fullhd = "1920x1080",
+		*halfhd = "960x540",
+		*normal = "1024x768";
 	SendMessage(hResolutionComboBox, CB_ADDSTRING, 0, fullhd);
 	SendMessage(hResolutionComboBox, CB_ADDSTRING, 0, halfhd);
 	SendMessage(hResolutionComboBox, CB_ADDSTRING, 0, normal);
