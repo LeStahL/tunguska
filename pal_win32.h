@@ -177,11 +177,11 @@ int WINAPI demo(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, in
 	WNDCLASS wca = { 0 };
 	wca.lpfnWndProc   = DialogProc;
 	wca.hInstance     = hInstance;
-	wca.lpszClassName = L"Settings";
+	wca.lpszClassName = "Settings";
 	RegisterClass(&wca);
 	HWND lwnd = CreateWindowEx(
 		0,                              // Optional window styles.
-		L"Settings",                     // Window class
+		"Settings",                     // Window class
 		demoname,    // Window text
 		WS_OVERLAPPEDWINDOW,            // Window style
 
