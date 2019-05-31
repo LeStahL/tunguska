@@ -229,7 +229,7 @@ int WINAPI demo(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, in
 	SendMessage(hTXAAComboBox,(UINT) CB_ADDSTRING,(WPARAM) 0,(LPARAM) (buf512));
 	SendMessage(hTXAAComboBox,(UINT) CB_ADDSTRING,(WPARAM) 0,(LPARAM) (buf1024));
 	//SendMessage(hTXAAComboBox, CB_SETCURSEL, 3, 0);
-	SendMessage(hTXAAComboBox, CB_SETCURSEL, 0, 0);
+	SendMessage(hTXAAComboBox, CB_SETCURSEL, 2, 0);
 
 	// Add "Antialiasing: " text
 	HWND hSceneText = CreateWindow(WC_STATIC, "Scene: ", WS_VISIBLE | WS_CHILD | SS_LEFT, 10,125,100,100, lwnd, NULL, hInstance, NULL);
