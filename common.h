@@ -1,3 +1,20 @@
+/* Tunguska - 64k Demo by Team210 at Solskogen 2019
+ * Copyright (C) 2018 Alexander Kraus <nr4@z10.info>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #ifndef COMMON_H
 #define COMMON_H
 
@@ -47,8 +64,10 @@ PFNGLACTIVETEXTUREPROC glActiveTexture;
 // Standard library and CRT rewrite for saving executable size
 void *memset(void *ptr, int value, size_t num)
 {
-	for(int i=num-1; i>=0; i--)
+	for(int i = num - 1; i >= 0; i--)
+	{
 		((unsigned char *)ptr)[i] = value;
+	}
 	return ptr;
 }
 
@@ -75,13 +94,15 @@ void debug(int shader_handle)
 		GLint len;
 		glGetShaderiv(shader_handle, GL_INFO_LOG_LENGTH, &len);
 		printf("    Log length: %d\n", len);
-		GLchar *CompileLog = (GLchar*)malloc(len*sizeof(GLchar));
+		GLchar *CompileLog = (GLchar*)malloc(len * sizeof(GLchar));
 		glGetShaderInfoLog(shader_handle, len, NULL, CompileLog);
 		printf("    Error messages:\n%s\n", CompileLog);
 		free(CompileLog);
 	}
 	else
+	{
 		printf("    Shader compilation successful.\n");
+	}
 }
 
 void debugp(int program)
@@ -95,13 +116,15 @@ void debugp(int program)
 		GLint len;
 		glGetProgramiv(program, GL_INFO_LOG_LENGTH, &len);
 		printf("    Log length: %d\n", len);
-		GLchar *CompileLog = (GLchar*)malloc(len*sizeof(GLchar));
+		GLchar *CompileLog = (GLchar*)malloc(len * sizeof(GLchar));
 		glGetProgramInfoLog(program, len, NULL, CompileLog);
 		printf("    Error messages:\n%s\n", CompileLog);
 		free(CompileLog);
 	}
 	else
+	{
 		printf("    Program linking successful.\n");
+	}
 }
 #else // DEBUG
 #define printf(a)
@@ -110,43 +133,43 @@ void debugp(int program)
 int w = 1920, h = 1080;
 
 int
-// SFX
-sfx_program,
-sfx_blockoffset_location,
-sfx_samplerate_location,
-sfx_volumelocation,
-sfx_texs_location,
-sfx_sequence_texture_location,
-sfx_sequence_width_location,
+	// SFX
+	sfx_program,
+	sfx_blockoffset_location,
+	sfx_samplerate_location,
+	sfx_volumelocation,
+	sfx_texs_location,
+	sfx_sequence_texture_location,
+	sfx_sequence_width_location,
 
-// Sequence
-sequence_texture_handle,
+	// Sequence
+	sequence_texture_handle,
 
-// Loading bar
-load_program,
-load_resolution_location,
-load_time_location,
-load_progress_location,
+	// Loading bar
+	load_program,
+	load_resolution_location,
+	load_time_location,
+	load_progress_location,
 
-// Post processing
-post_program,
-post_resolution_location,
-post_fsaa_location,
-post_channel0_location,
+	// Post processing
+	post_program,
+	post_resolution_location,
+	post_fsaa_location,
+	post_channel0_location,
 
-// Antialiasing
-fsaa = 25,
-txaa = 1,
+	// Antialiasing
+	fsaa = 25,
+	txaa = 1,
 
-// Logo
-logo210_time_location,
-logo210_resolution_location,
-logo210_program,
+	// Logo
+	logo210_time_location,
+	logo210_resolution_location,
+	logo210_program,
 
-// Decaying factory
-//     decayingfactory_time_location, 
-//     decayingfactory_resolution_location,
-//     decayingfactory_program, 
+	// Decaying factory
+	// decayingfactory_time_location, 
+	// decayingfactory_resolution_location,
+	// decayingfactory_program, 
 
 	// Text
 	text_time_location,
@@ -158,10 +181,10 @@ logo210_program,
 	text_program;
 
 // Demo globals
-#define duration 188.
+#define duration (188.)
 double t_start = 0.,
-t_now = 0.,
-t_end = duration;
+	t_now = 0.,
+	t_end = duration;
 
 unsigned int loading = 1, music_loading = 0;
 int music_block = 0;
@@ -175,7 +198,7 @@ float *smusic1;
 int music1_size;
 float texs = 128;
 int block_size = 128 * 128,
-nblocks1;
+	nblocks1;
 unsigned int paused = 0;
 float progress = .0;
 
@@ -190,8 +213,8 @@ float t_load_end = 0.;
 
 void load_demo();
 unsigned long __stdcall LoadMusicThread(void *lpParam);
-unsigned long __stdcall LoadLogo210Thread(void * lpParam);
-unsigned long __stdcall LoadTextThread(void * lpParam);
+unsigned long __stdcall LoadLogo210Thread(void *lpParam);
+unsigned long __stdcall LoadTextThread(void *lpParam);
 void quad();
 void updateBar();
 void draw();

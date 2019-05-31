@@ -106,7 +106,9 @@ void load_demo()
 	smusic1 = (float*)malloc(4 * music1_size);
 	short *dest = (short*)smusic1;
 	for (int i = 0; i < 2 * music1_size; ++i)
+	{
 		dest[i] = 0;
+	}
 
 	updateBar();
 
@@ -115,9 +117,8 @@ void load_demo()
 	updateBar();
 
 	// Load Logo 210 shader
-//     LoadDecayingfactoryThread(0);
-//     updateBar();
-//     SwapBuffers(hdc);
+//	LoadDecayingfactoryThread(0);
+//	updateBar();
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	LoadSymbols();
@@ -131,7 +132,7 @@ void load_demo()
 		glBindFramebuffer(GL_FRAMEBUFFER, snd_framebuffer);
 		glUseProgram(sfx_program);
 
-		printf("Rendering SFX block %d/%d -> %le\n", music_block, nblocks1, .5*(float)music_block / (float)nblocks1);
+		printf("Rendering SFX block %d/%d -> %le\n", music_block, nblocks1, .5 * (float)music_block / (float)nblocks1);
 		double tstart = (double)(music_block*block_size);
 
 		glViewport(0, 0, texs, texs);
@@ -154,11 +155,19 @@ void load_demo()
 		unsigned short *buf = (unsigned short*)smusic1;
 		short *dest = (short*)smusic1;
 		if (!muted)
-			for (int j = 2 * music_block*block_size; j < 2 * (music_block + 1)*block_size; ++j)
+		{
+			for (int j = 2 * music_block * block_size; j < 2 * (music_block + 1) * block_size; ++j)
+			{
 				dest[j] = (buf[j] - (1 << 15));
+			}
+		}
 		else
-			for (int j = 2 * music_block*block_size; j < 2 * (music_block + 1)*block_size; ++j)
-				dest[j] = 0.;
+		{
+			for (int j = 2 * music_block * block_size; j < 2 * (music_block + 1) * block_size; ++j)
+			{
+				dest[j] = 0;
+			}
+		}
 		updateBar();
 	}
 
@@ -167,7 +176,7 @@ void load_demo()
 	initialize_sound();
 }
 
-unsigned long __stdcall LoadMusicThread( void *lpParam)
+unsigned long __stdcall LoadMusicThread(void *lpParam)
 {
     sfx_program = load_fragment_shader(sfx_frag);
     sfx_samplerate_location = glGetUniformLocation(sfx_program, SFX_VAR_ISAMPLERATE);
@@ -179,36 +188,36 @@ unsigned long __stdcall LoadMusicThread( void *lpParam)
     printf("++++ SFX shader created.\n");
     
     music_loading = 1;
-    progress += .1/NSHADERS; 
+    progress += .1 / NSHADERS; 
     
     return 0;
 }
 
-unsigned long __stdcall LoadLogo210Thread( void * lpParam)
+unsigned long __stdcall LoadLogo210Thread(void *lpParam)
 {
     logo210_program = load_fragment_shader(logo210_frag);
     logo210_time_location =  glGetUniformLocation(logo210_program, LOGO210_VAR_ITIME);
     logo210_resolution_location = glGetUniformLocation(logo210_program, LOGO210_VAR_IRESOLUTION);
     printf("++++ Logo 210 shader created.\n");
     
-    progress += .1/NSHADERS;
+    progress += .1 / NSHADERS;
     
     return 0;
 }
 
-// unsigned long __stdcall LoadDecayingfactoryThread( void * lpParam)
+// unsigned long __stdcall LoadDecayingfactoryThread(void *lpParam)
 // {
 //     decayingfactory_program = load_fragment_shader(decayingfactory_frag);
 //     decayingfactory_time_location =  glGetUniformLocation(decayingfactory_program, DECAYINGFACTORY_VAR_ITIME);
 //     decayingfactory_resolution_location = glGetUniformLocation(decayingfactory_program, DECAYINGFACTORY_VAR_IRESOLUTION);
 //     printf("++++ Decaying factory shader created.\n");
 //     
-//     progress += .5/NSHADERS;
+//     progress += .5 / NSHADERS;
 //     
 //     return 0;
 // }
 
-unsigned long __stdcall LoadTextThread(void * lpParam)
+unsigned long __stdcall LoadTextThread(void *lpParam)
 {
     text_program = load_fragment_shader(text_frag);
     text_time_location =  glGetUniformLocation(text_program, TEXT_VAR_ITIME);
@@ -228,7 +237,7 @@ unsigned long __stdcall LoadTextThread(void * lpParam)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, font_texture_size, font_texture_size, 0, GL_RGBA, GL_UNSIGNED_BYTE, font_texture);
     
-    progress += .1/NSHADERS;
+    progress += .1 / NSHADERS;
     
     return 0;
 }
@@ -236,10 +245,10 @@ unsigned long __stdcall LoadTextThread(void * lpParam)
 void quad()
 {
     glBegin(GL_QUADS);
-    glVertex3f(-1,-1,0);
-    glVertex3f(-1,1,0);
-    glVertex3f(1,1,0);
-    glVertex3f(1,-1,0);
+    glVertex3f(-1, -1, 0);
+    glVertex3f(-1, 1, 0);
+    glVertex3f(1, 1, 0);
+    glVertex3f(1, -1, 0);
     glEnd();
     glFlush();
 }
@@ -249,12 +258,12 @@ void updateBar()
     glBindFramebuffer(GL_FRAMEBUFFER, first_pass_framebuffer);
     
     // Render first pass
-    glViewport(0,0,w,h);
+    glViewport(0, 0, w, h);
     glClear(GL_COLOR_BUFFER_BIT);
     
     glUseProgram(load_program);
     glUniform2f(load_resolution_location, w, h);
-    progress += .5/nblocks1;
+    progress += .5 / nblocks1;
     glUniform1f(load_progress_location, progress);
     
     quad();
@@ -262,7 +271,7 @@ void updateBar()
     // Render second pass (Post processing) to screen
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glClear(GL_COLOR_BUFFER_BIT);
-    glViewport(0,0,w,h);
+    glViewport(0, 0, w, h);
     
     glUseProgram(post_program);
     glUniform2f(post_resolution_location, w, h);
@@ -287,7 +296,9 @@ void draw()
     
     float t = t_now;
     if(t > t_end)
+	{
         ExitProcess(0);
+	}
     
     if(scene_override)
     {
@@ -300,7 +311,7 @@ void draw()
     }
     else
     {
-        if(t < 9000.)
+        if(t < 9000.f)
         {
 //             printf("iTime=%le\n", t);
 //             printf("program: %d, timeloc: %d, resloc: %d\n", decayingfactory_program, decayingfactory_iTime_location, decayingfactory_iResolution_location);
@@ -308,8 +319,12 @@ void draw()
             glUniform1f(fogforest_iTime_location, t);
             glUniform2f(fogforest_iResolution_location, w, h);
         }
-        else ExitProcess(0);
+        else
+		{
+			ExitProcess(0);
+		}
     }
+
     quad();
     
     // Render text to buffer
@@ -333,7 +348,7 @@ void draw()
     // Render second pass (Post processing) to screen
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glClear(GL_COLOR_BUFFER_BIT);
-    glViewport(0,0,w,h);
+    glViewport(0, 0, w, h);
     
     glUseProgram(post_program);
     glUniform2f(post_resolution_location, w, h);
