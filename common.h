@@ -26,6 +26,7 @@
 #define sign(x) ((x)<0?-1.:1.)
 
 #ifdef WIN32
+#	define _CRT_SECURE_NO_WARNINGS
 #	define WIN32_LEAN_AND_MEAN
 #	define VC_EXTRALEAN
 #	include <windows.h>
