@@ -14,19 +14,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from importlib.machinery import SourceFileLoader
+import GLSLLexer130
 
-Rule = SourceFileLoader("Rule", "../minification/Rule.py").load_module()
-Token = SourceFileLoader("Token", "../minification/Token.py").load_module()
-GLSLLexer130 = SourceFileLoader("GLSLLexer130", "../minification/GLSLLexer130.py").load_module()
-
-code = ""
-with open("../gfx/symbols/normal.frag", "rt") as f:
-    code = f.read()
-    f.close()
-    
-lexer = GLSLLexer130.GLSLLexer130(code)
-token = lexer.token()
-while token != None:
-    print("name=", token.tokenName, "; data=", token.tokenData)
+def compress(source):
+    newcode = ""
+    lexer = GLSLLexer130.GLSLLexer130(source)
     token = lexer.token()
+    while token != None:
+        if (token.tokenName != "SINGLELINE_COMMENT") and (token.tokenName != "MULTILINE_COMMENT"):
+            newcode += token.tokenData
+        if token.tokenName in [ "VOID", "FLOAT", "VEC2", "VEC3", "VEC4", "MAT2", "MAT3", "MAT4", "SAMPLER2D", "UNIFORM", "IN_QUALIFIER", "OUT_QUALIFIER", "INOUT_QUALIFIER", "VOID", "VERSION_DIRECTIVE", "DEFINE_DIRECTIVE", "CONST", "INT", "ELSE" ]:
+            newcode += " "
+        token = lexer.token()
+    return newcode

@@ -17,6 +17,13 @@
 import os
 import argparse
 
+from importlib.machinery import SourceFileLoader
+
+Rule = SourceFileLoader("Rule", "../minification/Rule.py").load_module()
+Token = SourceFileLoader("Token", "../minification/Token.py").load_module()
+GLSLLexer130 = SourceFileLoader("GLSLLexer130", "../minification/GLSLLexer130.py").load_module()
+Compressor = SourceFileLoader("Compressor", "../minification/Compressor.py").load_module()
+
 # Get available symbols
 symbol_files = os.listdir("symbols")
 
@@ -31,7 +38,7 @@ for symbol_file in symbol_files:
     with open("symbols/"+symbol_file, "rt") as f:
         symbol_code = f.read()
         f.close()
-    symbol_codes += [ symbol_code.replace('\n', '\\n\"\n\"').replace('#version 130', '#version 130\\n')  + "\\0"]
+    symbol_codes += [ Compressor.compress(symbol_code).replace('\n', '\\n\"\n\"').replace('#version 130', '#version 130\\n')  + "\\0"]
 
 # Parse command line args
 parser = argparse.ArgumentParser(description='Team210 symbol packer.')
@@ -59,7 +66,7 @@ for inputfile in rest:
         input_source = f.read()
         f.close()
     #print(input_source)
-    scene_sources += [ input_source.replace('\n', '\\n\"\n\"').replace('#version 130', '#version 130\\n') + "\\0" ]
+    scene_sources += [ Compressor.compress(input_source).replace('\n', '\\n\"\n\"').replace('#version 130', '#version 130\\n') + "\\0" ]
     input_source_lines = input_source.split('\n')
     input_source_lines = [ l + "\n" for l in input_source_lines ]
     #print(input_source_lines)
