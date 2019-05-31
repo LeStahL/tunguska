@@ -5,6 +5,7 @@ build
 *__pycache__
 .vs
 /CMakeSettings.json
+/CMakeLists.txt.user
 
 # Prerequisites
 *.d
